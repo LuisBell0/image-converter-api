@@ -1,0 +1,78 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# C extensions
+*.so
+
+# Virtual environment
+venv/
+env/
+ENV/
+.venv/
+.env/
+
+# Django stuff:
+*.log
+*.pot
+*.pyc
+db.sqlite3
+db.sqlite3-journal
+media/
+staticfiles/
+static_root/
+
+# Django migration files
+**/migrations/*.py
+!**/migrations/__init__.py
+**/migrations/*.pyc
+
+# Local settings
+*.local
+*.env
+
+# VS Code
+.vscode/
+
+# PyCharm
+.idea/
+
+# OS-specific files
+.DS_Store
+Thumbs.db
+
+# Coverage reports
+htmlcov/
+.coverage
+.coverage.*
+.cache
+nosetests.xml
+coverage.xml
+*.cover
+*.py,cover
+
+# mypy
+.mypy_cache/
+.dmypy.json
+dmypy.json
+
+# Pytest
+.pytest_cache/
+
+# Test results
+junit-*.xml
+
+# pipenv
+Pipfile.lock
+
+# Docker
+*.pid
+*.seed
+*.pid.lock
+
+# Sentry CLI auth token
+.sentryclirc
+
+# Other
+*.bak
