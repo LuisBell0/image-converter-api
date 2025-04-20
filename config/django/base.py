@@ -36,29 +36,14 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
 
+    'storages',
     'rest_framework',
     'rest_framework_simplejwt.token_blacklist',
     'djoser',
     'accounts_jwt',
+    'images',
 ]
 
-REST_FRAMEWORK = {
-    'DEFAULT_AUTHENTICATION_CLASSES': (
-        'rest_framework_simplejwt.authentication.JWTAuthentication',
-    )
-}
-
-SIMPLE_JWT = {
-    "BLACKLIST_AFTER_ROTATION": True,
-    "UPDATE_LAST_LOGIN": True,
-}
-
-DJOSER = {
-    'LOGIN_FIELD': 'email',
-    'USER_CREATE_PASSWORD_RETYPE':True,
-    'SEND_ACTIVATION_EMAIL': True,
-    'ACTIVATION_URL': 'api/activate/{uid}/{token}/',
-}
 
 AUTH_USER_MODEL = 'accounts_jwt.CustomUser'
 
@@ -144,19 +129,49 @@ STATIC_URL = 'static/'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
+MEDIA_ROOT = BASE_DIR / 'media'
+MEDIA_URL = '/media/'
+
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': (
+        'rest_framework_simplejwt.authentication.JWTAuthentication',
+    )
+}
+
+SIMPLE_JWT = {
+    "BLACKLIST_AFTER_ROTATION": True,
+    "UPDATE_LAST_LOGIN": True,
+}
+
+DJOSER = {
+    'LOGIN_FIELD': 'email',
+    'USER_CREATE_PASSWORD_RETYPE':True,
+    'SEND_ACTIVATION_EMAIL': True,
+    'ACTIVATION_URL': 'api/activate/{uid}/{token}/',
+}
+
+# ACTIVATE FOR SENDING IMAGES TO THE CLOUD
+# STORAGES = {
+#     "default": {
+#         "BACKEND": "storages.backends.s3boto3.S3Boto3Storage",
+#     },
+#     "staticfiles": {
+#         "BACKEND": "django.contrib.staticfiles.storage.StaticFilesStorage",
+#     },
+# }
+
 # Set the email backend
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
-
-# Email host (SMTP server)
 EMAIL_HOST = 'smtp.gmail.com'
-
-# Email port (usually 587 for TLS/STARTTLS or 465 for SSL)
 EMAIL_PORT = 587
-
-# Whether to use TLS/STARTTLS for secure connection (recommended)
 EMAIL_USE_TLS = True
-
-# Email address used for sending emails
 EMAIL_HOST_USER = env('EMAIL_HOST_USER')
-
 EMAIL_HOST_PASSWORD = env('EMAIL_HOST_PASSWORD')
+
+# BACKBLAZE B2 SETTINGS
+AWS_ACCESS_KEY_ID = env('AWS_ACCESS_KEY_ID')
+AWS_SECRET_ACCESS_KEY = env('AWS_SECRET_ACCESS_KEY')
+AWS_STORAGE_BUCKET_NAME = env('AWS_STORAGE_BUCKET_NAME')
+AWS_S3_REGION_NAME = env('AWS_S3_REGION_NAME')
+AWS_S3_ENDPOINT = env('AWS_S3_ENDPOINT')
+AWS_S3_ENDPOINT_URL = env('AWS_S3_ENDPOINT_URL')
