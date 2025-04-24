@@ -11,6 +11,7 @@ https://docs.djangoproject.com/en/5.2/ref/settings/
 """
 import os
 from config.env import env, BASE_DIR
+from datetime import timedelta
 
 env.read_env(os.path.join(BASE_DIR, ".env"))
 
@@ -141,6 +142,7 @@ REST_FRAMEWORK = {
 SIMPLE_JWT = {
     "BLACKLIST_AFTER_ROTATION": True,
     "UPDATE_LAST_LOGIN": True,
+    "ACCESS_TOKEN_LIFETIME": timedelta(hours=1)
 }
 
 DJOSER = {

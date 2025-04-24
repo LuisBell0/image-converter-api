@@ -27,11 +27,11 @@ class ImageConversion(models.Model):
         blank=True
     )
     converted_image = models.ImageField(upload_to='images/')
-    conversion_format = models.CharField(max_length=10, choices=FORMAT_CHOICES)
+    conversion_format = models.CharField(max_length=10, choices=FORMAT_CHOICES, blank=True, null=True)
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending')
     error_message = models.TextField(null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
     def __str__(self):
-        return f"Conversion {self.id} - {self.conversion_format} - {self.status}"
+        return f"{self.id} - {self.user} - {self.conversion_format} - {self.status}"
