@@ -41,6 +41,24 @@ def convert_image(image_file, new_format=None, quality_percentage=100):
     return ContentFile(buffer.getvalue()), new_filename, extension.upper()
 
 
+def resize_image(image_file, width=None, height=None):
+    buffer = BytesIO()
+    image = Image.open(image_file)
+
+    try:
+        width = int(width) if width is not None else image.width
+        height = int(height) if height is not None else image.height
+    except (TypeError, ValueError):
+        return Response({"detail": "Width and height must be valid integers."}, status=status.HTTP_400_BAD_REQUEST)
+
+    image_resized = image.resize((width, height))
+    image_resized.save(buffer, format=image.format)
+
+    filename_base, _ = os.path.splitext(os.path.basename(image_file.name))
+    new_filename = f"{filename_base}.{image.format.lower()}"
+    return ContentFile(buffer.getvalue()), new_filename
+
+
 def _save_conversion(self, user, filename, format_str, content):
     """Saves the image conversion for authenticated users."""
     conversion = ImageConversion.objects.create(

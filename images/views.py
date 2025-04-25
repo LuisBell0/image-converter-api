@@ -10,7 +10,7 @@ from rest_framework.response import Response
 from .models import ImageConversion
 from .permissions import IsOwner
 from .serializers import ImageSerializer
-from .services import convert_image, _save_conversion, _parse_config
+from .services import convert_image, _save_conversion, _parse_config, resize_image
 
 
 class ImageViewSet(viewsets.ModelViewSet):
@@ -58,3 +58,25 @@ class ImageViewSet(viewsets.ModelViewSet):
         )
         serializer = self.get_serializer(conversion)
         return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+    @action(methods=['post'], detail=False, url_path='resize', permission_classes=[AllowAny])
+    def resize_image_view(self, request):
+        config = _parse_config(self, request)
+        if isinstance(config, Response):
+            return config
+
+        image = request.FILES.get("image")
+        if not image:
+            return Response({"detail": "No image file provided."}, status=status.HTTP_400_BAD_REQUEST)
+
+        width = config["width"] if "width" in config else None
+        height = config["height"] if "height" in config else None
+        if width or height:
+            result = resize_image(image, width=width, height=height)
+            if isinstance(result, Response):
+                return result
+
+            content, new_filename = result
+            return FileResponse(BytesIO(content.read()), as_attachment=True, filename=new_filename)
+
+        return Response({"detail": "No width or height was provided"}, status=status.HTTP_400_BAD_REQUEST)
