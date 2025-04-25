@@ -1,12 +1,16 @@
+from io import BytesIO
+
+from django.http import FileResponse
 from rest_framework import viewsets, status
+from rest_framework.decorators import action
 from rest_framework.exceptions import ValidationError
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.response import Response
 
+from .models import ImageConversion
 from .permissions import IsOwner
 from .serializers import ImageSerializer
-from .models import ImageConversion
-from .services import optimize_image
+from .services import convert_image, _save_conversion, _parse_config
 
 
 class ImageViewSet(viewsets.ModelViewSet):
@@ -24,14 +28,33 @@ class ImageViewSet(viewsets.ModelViewSet):
         if not image_file:
             raise ValidationError({"converted_image": "No image file was provided."})
 
-        content, filename, format_str = optimize_image(image_file)
-        conversion = ImageConversion.objects.create(
-            user=request.user,
-            conversion_format=format_str,
-            status='completed'
+        content, filename, format_str = convert_image(image_file)
+        conversion = _save_conversion(
+            self, user=request.user, content=content, filename=filename, format_str=format_str
         )
 
-        conversion.converted_image.save(filename, content, save=True)
+        serializer = self.get_serializer(conversion)
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
 
+    @action(methods=['post'], detail=False, url_path='convert', permission_classes=[AllowAny])
+    def convert_image(self, request):
+        config = _parse_config(self, request)
+        if isinstance(config, Response):
+            return config
+
+        image = request.FILES.get("image")
+        if not image:
+            return Response({"detail": "No image file provided."}, status=status.HTTP_400_BAD_REQUEST)
+
+        content, filename, format_str = convert_image(
+            image_file=image, new_format=config["format"], quality_percentage=config["optimize"]
+        )
+
+        if not request.user.is_authenticated:
+            return FileResponse(BytesIO(content.read()), as_attachment=True, filename=filename)
+
+        conversion = _save_conversion(
+            self, user=request.user, content=content, filename=filename, format_str=format_str
+        )
         serializer = self.get_serializer(conversion)
         return Response(serializer.data, status=status.HTTP_201_CREATED)

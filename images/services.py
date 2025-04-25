@@ -1,56 +1,69 @@
+import json
 import os
 from io import BytesIO
 
 from PIL import Image
 from django.core.files.base import ContentFile
+from rest_framework import status
+from rest_framework.response import Response
 
-from .models import FORMAT_CHOICES
+from .models import ImageConversion
 
 
-def optimize_image(image_field, quality_percentage=80):
+def convert_image(image_file, new_format=None, quality_percentage=100):
     """
-    Optimizes the given image_field and returns (ContentFile, new_filename, format).
+    Converts the image to a specified format, optimizes it, and returns:
+    (ContentFile, new_filename, format_str)
     """
-
-    img = Image.open(image_field)
+    img = Image.open(image_file)
+    original_format = img.format
+    image_format = new_format or original_format
+    image_format = image_format.lower()
     buffer = BytesIO()
-    print(img.format)
-    if img.format.lower() == "jpeg":
-        extension = "jpeg"
-        img = img.convert('RGB')
-        img.save(buffer, format="JPEG", quality=quality_percentage, optimize=True, progressive=True)
-    elif img.format.lower() == "png":
-        extension = 'png'
-        img.save(buffer, format="PNG", optimize=True)
-    else:
-        extension = 'webp'
-        img = img.convert('RGB') if img.mode in ("RGBA", "P") else img
-        img.save(buffer, format="WEBP", quality=quality_percentage, method=6)
 
-    filename_base, _ = os.path.splitext(os.path.basename(image_field.name))
+    if image_format == "jpeg" or image_format == "jpg":
+        extension = "jpg"
+        img = img.convert("RGB")
+        img.save(buffer, format="JPEG", quality=quality_percentage, optimize=True, progressive=True)
+    elif image_format == "png":
+        extension = "png"
+        img.save(buffer, format="PNG", optimize=True)
+    elif image_format == "webp":
+        extension = "webp"
+        img = img.convert("RGB") if img.mode in ("RGBA", "P") else img
+        img.save(buffer, format="WEBP", quality=quality_percentage, method=6)
+    else:
+        raise ValueError(f"Unsupported format: {image_format}")
+
+    filename_base, _ = os.path.splitext(os.path.basename(image_file.name))
     new_filename = f"{filename_base}.{extension}"
 
     return ContentFile(buffer.getvalue()), new_filename, extension.upper()
 
 
-def convert_image_format(image_path, output_format):
-    """
-    Converts an image to a specified format.
-    """
-    if output_format not in dict(FORMAT_CHOICES):
-        raise ValueError(f"Format '{output_format}' is not supported.")
+def _save_conversion(self, user, filename, format_str, content):
+    """Saves the image conversion for authenticated users."""
+    conversion = ImageConversion.objects.create(
+        user=user,
+        conversion_format=format_str,
+        status='completed'
+    )
+    conversion.converted_image.save(filename, content, save=True)
+    return conversion
+
+
+def _parse_config(self, request):
+    """Parses and validates the config JSON."""
+    raw_config = request.POST.get("config")
+    if not raw_config:
+        return Response({"detail": "Missing 'config' in POST data."}, status=status.HTTP_400_BAD_REQUEST)
 
     try:
-        img = Image.open(image_path)
+        config = json.loads(raw_config)
+    except json.JSONDecodeError:
+        return Response({"detail": "Invalid JSON format in 'config'."}, status=status.HTTP_400_BAD_REQUEST)
 
-        file_name, ext = os.path.splitext(os.path.basename(image_path))
+    if not isinstance(config, dict):
+        return Response({"detail": "'config' must be a JSON object."}, status=status.HTTP_400_BAD_REQUEST)
 
-        output_path = f"{file_name}.{output_format.lower()}"
-
-        img.save(output_path, output_format)
-        print(f"Image successfully converted and saved to {output_path}")
-
-    except FileNotFoundError:
-        print(f"Error: Image file not found at {image_path}")
-    except Exception as e:
-        print(f"An error occurred: {e}")
+    return config
