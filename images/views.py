@@ -1,5 +1,3 @@
-from django.core.files.base import ContentFile
-from django.http import FileResponse
 from rest_framework import viewsets, status
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.response import Response
@@ -8,7 +6,7 @@ from .models import ImageConversion
 from .permissions import IsOwner
 from .pipeline import process_image_pipeline
 from .serializers import ImageSerializer
-from .services import _save_conversion, _parse_config
+from .services import _save_conversion, _parse_config, _save_authenticated, _respond_anonymous
 
 
 class ImageViewSet(viewsets.ModelViewSet):
@@ -39,19 +37,16 @@ class ImageViewSet(viewsets.ModelViewSet):
             processed_image, original_format = process_image_pipeline(image, config)
         except ValueError as e:
             return Response({"detail": str(e)}, status=status.HTTP_400_BAD_REQUEST)
-
+        print(processed_image, "image")
         new_filename, buffer, new_format = _save_conversion(processed_image, image.name, original_format, config)
 
         if not request.user.is_authenticated:
-            # TODO: SERIALIZE FOR NON AUTH USERS
-            return FileResponse(buffer, as_attachment=True, filename=new_filename)
+            return _respond_anonymous(buffer, new_filename)
 
-        file_content = ContentFile(buffer.getvalue(), name=image.name)
-        conversion = ImageConversion.objects.create(
+        conversion = _save_authenticated(
             user=request.user,
-            conversion_format=new_format,
-            status='completed'
-        )
-        conversion.converted_image.save(new_filename, file_content, save=True)
+            buffer=buffer.getvalue(),
+            format=original_format,
+            filename=new_filename)
         serializer = self.get_serializer(conversion)
         return Response(serializer.data, status=status.HTTP_201_CREATED)
