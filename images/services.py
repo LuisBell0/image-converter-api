@@ -2,8 +2,26 @@ import json
 import os
 from io import BytesIO
 
+from django.core.files.base import ContentFile
+from django.http import FileResponse
 from rest_framework import status
 from rest_framework.response import Response
+
+from images.models import ImageConversion
+
+
+def _respond_anonymous(buffer, filename):
+    buffer.seek(0)
+    return FileResponse(buffer, as_attachment=True, filename=filename)
+
+
+def _save_authenticated(user, buffer, filename, format):
+    file_content = ContentFile(buffer.getvalue(), name=filename)
+    conversion = ImageConversion.objects.create(
+        user=user, conversion_format=format, status='completed'
+    )
+    conversion.converted_image.save(filename, file_content, save=True)
+    return conversion
 
 
 def _save_conversion(image, original_name, original_format, config):
