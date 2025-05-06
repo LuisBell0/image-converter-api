@@ -12,7 +12,6 @@ from .services import _save_conversion, _parse_config, _save_authenticated, _res
 class ImageViewSet(viewsets.ModelViewSet):
     queryset = ImageConversion.objects.all()
     serializer_class = ImageSerializer
-    permission_classes = [IsAuthenticated, IsOwner]
 
     def get_permissions(self):
         if self.action == 'create':
@@ -25,7 +24,7 @@ class ImageViewSet(viewsets.ModelViewSet):
         return Response(serializer.data)
 
     def create(self, request, *args, **kwargs):
-        config = _parse_config(self, request)
+        config = _parse_config(request)
         if isinstance(config, Response):
             return config
 
@@ -37,7 +36,6 @@ class ImageViewSet(viewsets.ModelViewSet):
             processed_image, original_format = process_image_pipeline(image, config)
         except ValueError as e:
             return Response({"detail": str(e)}, status=status.HTTP_400_BAD_REQUEST)
-        print(processed_image, "image")
         new_filename, buffer, new_format = _save_conversion(processed_image, image.name, original_format, config)
 
         if not request.user.is_authenticated:
@@ -45,8 +43,8 @@ class ImageViewSet(viewsets.ModelViewSet):
 
         conversion = _save_authenticated(
             user=request.user,
-            buffer=buffer.getvalue(),
-            format=original_format,
+            buffer=buffer,
+            conversion_format=original_format,
             filename=new_filename)
         serializer = self.get_serializer(conversion)
         return Response(serializer.data, status=status.HTTP_201_CREATED)
