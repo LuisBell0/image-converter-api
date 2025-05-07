@@ -1,19 +1,35 @@
-from .transformations import convert_image_format, resize_image, crop_image
+from PIL import Image
+
+from .transformations.registry import TRANSFORM_MAP
 
 
-def process_image_pipeline(image_file, config):
-    from PIL import Image
+def process_image_pipeline(image_file: Image, config: dict) -> tuple[Image.Image, str]:
+    """
+    Process an image through a sequence of registered transformations.
+
+    Opens the given image file, records its original format, and applies each
+    transformation found in the global TRANSFORM_MAP according to the provided
+    configuration.
+
+    Args:
+        image_file: A file path or file-like object representing the input image.
+        config (dict): Mapping of transformation keys (str) to their parameter values.
+
+    Returns:
+        tuple[Image.Image, str]:
+            - The processed PIL Image.
+            - The image's original format as a string.
+
+    Raises:
+        KeyError: If a transformation key in `config` is not present in TRANSFORM_MAP.
+        ValueError: If a transformation's `apply` method raises an error for invalid params.
+    """
     img = Image.open(image_file)
-    original_image_format = img.format
-    transformations = []
-    if "resize" in config:
-        transformations.append(lambda i: resize_image(i, config["resize"]))
-    if "format" in config:
-        transformations.append(lambda i: convert_image_format(i, config["format"]))
-    if "crop" in config:
-        transformations.append(lambda i: crop_image(i, config["crop"]))
+    original_format = img.format
 
-    for transform in transformations:
-        img = transform(img)
+    for key, params in config.items():
+        transformer = TRANSFORM_MAP[key]
+        if transformer:
+            transformer.apply(img, params)
 
-    return img, original_image_format
+    return img, original_format
