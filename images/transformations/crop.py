@@ -40,6 +40,9 @@ class CropImage(Transformation):
             ValueError: If any coordinate cannot be converted to an integer,
                         or if the resulting box is invalid or out of bounds.
         """
+        if not isinstance(config, dict):
+            raise ValueError("crop must be a JSON object")
+
         img_width, img_height = image.size
         left = config.get("left")
         right = config.get("right")

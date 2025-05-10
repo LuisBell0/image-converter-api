@@ -34,7 +34,7 @@ class ImageViewSet(viewsets.ModelViewSet):
 
         try:
             processed_image, original_format = process_image_pipeline(image, config)
-        except ValueError as e:
+        except (ValueError, TypeError) as e:
             return Response({"detail": str(e)}, status=status.HTTP_400_BAD_REQUEST)
         new_filename, buffer, new_format = _save_conversion(processed_image, image.name, original_format, config)
 

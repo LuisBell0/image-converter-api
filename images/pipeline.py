@@ -30,6 +30,6 @@ def process_image_pipeline(image_file: Image, config: dict) -> tuple[Image.Image
     for key, params in config.items():
         transformer = TRANSFORM_MAP[key]
         if transformer:
-            transformer.apply(img, params)
+            img = transformer.apply(img, params)
 
     return img, original_format
