@@ -28,7 +28,7 @@ def process_image_pipeline(image_file: Image, config: dict) -> tuple[Image.Image
     original_format = img.format
 
     for key, params in config.items():
-        transformer = TRANSFORM_MAP[key]
+        transformer = TRANSFORM_MAP.get(key)
         if transformer:
             img = transformer.apply(img, params)
 
