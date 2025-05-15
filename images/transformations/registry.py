@@ -1,23 +1,23 @@
-from .crop import CropImage
-from .enhancements import SharpnessEnhancement, ColorEnhancement, BrightnessEnhancement, ContrastEnhancement
-from .format import ConvertImageFormat
-from .resize import ResizeImage
-from .rotate import RotateImage
-from .transpose import TransposeImage
+from typing import Dict
 
-# TODO: UPDATE FOR DYNAMIC IMPORT AND REGISTER INSTEAD OF MANUALLY REGISTER EACH TRANSFORMATION
+from .transformation_abstract import Transformation
 
-ALL_TRANSFORMATIONS = [
-    ResizeImage(),
-    CropImage(),
-    RotateImage(),
-    TransposeImage(),
-    ContrastEnhancement(),
-    BrightnessEnhancement(),
-    SharpnessEnhancement(),
-    ColorEnhancement(),
-    ConvertImageFormat(),
-]
+_registry: Dict[str, Transformation] = {}
 
-# Build a dict key → instance:
-TRANSFORM_MAP = {t.key(): t for t in ALL_TRANSFORMATIONS}
+
+def register_transform(cls):
+    """
+    Class decorator: Instantiates cls, grabs its .key(),
+    and stores the instance in registry dict under that key.
+    """
+    inst = cls()
+    key = inst.key()
+    if key in _registry:
+        raise RuntimeError(f"Duplicate transform key: {key!r}")
+    _registry[key] = inst
+    return cls
+
+
+def get_transform_map() -> Dict[str, Transformation]:
+    """Return a fresh dict of key → instance."""
+    return dict(_registry)

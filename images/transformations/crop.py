@@ -1,8 +1,10 @@
 from PIL import Image
 
+from images.transformations.registry import register_transform
 from images.transformations.transformation_abstract import Transformation
 
 
+@register_transform
 class CropImage(Transformation):
     """
     Transformation that crops a PIL Image based on provided bounding box coordinates.

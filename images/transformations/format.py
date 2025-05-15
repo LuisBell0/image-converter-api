@@ -1,9 +1,11 @@
 from PIL import Image
 
+from .registry import register_transform
 from .transformation_abstract import Transformation
 from ..models import FORMAT_CHOICES
 
 
+@register_transform
 class ConvertImageFormat(Transformation):
     """
     Transformation that converts a PIL Image to a specified output format.

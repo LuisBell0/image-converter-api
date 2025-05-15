@@ -1,6 +1,6 @@
 from PIL import Image
 
-from .transformations.registry import TRANSFORM_MAP
+from .transformations import TRANSFORM_MAP
 
 
 def process_image_pipeline(image_file: Image, config: dict) -> tuple[Image.Image, str]:

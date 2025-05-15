@@ -1,5 +1,6 @@
 from PIL import Image
 
+from images.transformations.registry import register_transform
 from images.transformations.transformation_abstract import Transformation
 
 # Supported transpose methods mapped to their PIL constants
@@ -14,6 +15,7 @@ TRANSPOSE_METHODS = {
 }
 
 
+@register_transform
 class TransposeImage(Transformation):
     """
     Transformation that applies a predefined transpose operation to a PIL Image.

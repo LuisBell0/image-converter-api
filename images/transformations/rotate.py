@@ -1,8 +1,10 @@
 from PIL import Image
 
+from images.transformations.registry import register_transform
 from images.transformations.transformation_abstract import Transformation
 
 
+@register_transform
 class RotateImage(Transformation):
     """
     Transformation that rotates a PIL Image based on the provided angle.

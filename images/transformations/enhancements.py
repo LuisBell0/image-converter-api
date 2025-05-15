@@ -1,6 +1,7 @@
 from PIL import Image, ImageEnhance
 
 from images.transformations.transformation_abstract import Transformation
+from .registry import register_transform
 
 
 class ImageEnhancer(Transformation):
@@ -67,6 +68,7 @@ class ImageEnhancer(Transformation):
         return enhancer.enhance(enhancement_value)
 
 
+@register_transform
 class SharpnessEnhancement(ImageEnhancer):
     """
     Adjust sharpness of an image.
@@ -77,6 +79,7 @@ class SharpnessEnhancement(ImageEnhancer):
         super().__init__(key_name="sharpness", enhancer_class=ImageEnhance.Sharpness)
 
 
+@register_transform
 class BrightnessEnhancement(ImageEnhancer):
     """
     Adjust brightness of an image.
@@ -87,6 +90,7 @@ class BrightnessEnhancement(ImageEnhancer):
         super().__init__(key_name="brightness", enhancer_class=ImageEnhance.Brightness)
 
 
+@register_transform
 class ContrastEnhancement(ImageEnhancer):
     """
     Adjust contrast of an image.
@@ -97,6 +101,7 @@ class ContrastEnhancement(ImageEnhancer):
         super().__init__(key_name="contrast", enhancer_class=ImageEnhance.Contrast)
 
 
+@register_transform
 class ColorEnhancement(ImageEnhancer):
     """
     Enhance color intensity of an image.

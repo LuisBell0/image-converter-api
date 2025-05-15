@@ -1,8 +1,10 @@
 from PIL import Image
 
 from images.transformations.transformation_abstract import Transformation
+from .registry import register_transform
 
 
+@register_transform
 class ResizeImage(Transformation):
     """
     Transformation that resizes a PIL Image based on provided width and/or height.
