@@ -38,7 +38,7 @@ class ResizeImage(Transformation):
             ValueError: If width or height cannot be converted to an integer.
         """
         if not isinstance(config, dict):
-            raise ValueError("resize must be a JSON object")
+            raise ValueError("Resize configuration must be a JSON object")
 
         width = config.get("width") or None
         height = config.get("height") or None

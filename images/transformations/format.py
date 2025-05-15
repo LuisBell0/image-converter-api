@@ -38,7 +38,7 @@ class ConvertImageFormat(Transformation):
             ValueError: If `new_format` is not one of the allowed formats.
         """
         if not isinstance(new_format, str):
-            raise TypeError("Format must be a string")
+            raise TypeError("Format configuration must be a string")
 
         valid_formats = {valid_format for valid_format, _ in FORMAT_CHOICES}
         if new_format.upper() not in valid_formats:

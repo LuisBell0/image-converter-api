@@ -52,7 +52,7 @@ class TransposeImage(Transformation):
             ValueError: If the config is not a dictionary, or contains an invalid or missing method.
         """
         if not isinstance(config, dict):
-            raise ValueError("Transpose must be a valid JSON object")
+            raise ValueError("Transpose configuration must be a valid JSON object")
 
         method = config.get("method")
         if method is None or not isinstance(method, str):

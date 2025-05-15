@@ -40,7 +40,7 @@ class RotateImage(Transformation):
             ValueError: If config is not a dict or contains invalid types for angle, expand, or fillColor.
         """
         if not isinstance(config, dict):
-            raise ValueError("rotate must be a JSON object")
+            raise ValueError("Rotate configuration must be a JSON object")
 
         angle = config.get("angle")
         expand = config.get("expand", False)

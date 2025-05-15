@@ -41,7 +41,7 @@ class CropImage(Transformation):
                         or if the resulting box is invalid or out of bounds.
         """
         if not isinstance(config, dict):
-            raise ValueError("crop must be a JSON object")
+            raise ValueError("Crop configuration must be a JSON object")
 
         img_width, img_height = image.size
         left = config.get("left")
