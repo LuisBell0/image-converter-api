@@ -3,7 +3,6 @@ from PIL import Image
 from images.transformations.registry import register_transform
 from images.transformations.transformation_abstract import Transformation
 
-# Supported transpose methods mapped to their PIL constants
 TRANSPOSE_METHODS = {
     'FLIP_LEFT_RIGHT': Image.Transpose.FLIP_LEFT_RIGHT,
     'FLIP_TOP_BOTTOM': Image.Transpose.FLIP_TOP_BOTTOM,
@@ -28,42 +27,38 @@ class TransposeImage(Transformation):
 
     def key(self) -> str:
         """
-        Return the key used in the pipeline configuration dict to invoke this transform.
+        Return the key used in the pipeline configuration dict to invoke this transformation.
 
         Returns:
             str: The config key, "transpose".
         """
         return "transpose"
 
-    def apply(self, image: Image.Image, config: dict) -> Image.Image:
+    def apply(self, image: Image.Image, transpose_method: str) -> Image.Image:
         """
         Apply a transpose transformation to a PIL Image based on the provided configuration.
 
         Args:
             image (Image.Image): The input PIL Image to transform.
-            config (dict): A dictionary containing:
-                - method (str): The transpose method name, one of:
-                    "FLIP_LEFT_RIGHT", "FLIP_TOP_BOTTOM",
-                    "ROTATE_90", "ROTATE_180", "ROTATE_270",
-                    "TRANSPOSE", "TRANSVERSE"
+            transpose_method (str): The transpose method name, one of:
+                "FLIP_LEFT_RIGHT", "FLIP_TOP_BOTTOM",
+                "ROTATE_90", "ROTATE_180", "ROTATE_270",
+                "TRANSPOSE", "TRANSVERSE"
 
         Returns:
             Image.Image: The transformed image.
 
         Raises:
-            ValueError: If the config is not a dictionary, or contains an invalid or missing method.
+            ValueError: transpose_method is None, not a string or not in TRANSPOSE_METHODS.
         """
-        if not isinstance(config, dict):
-            raise ValueError("Transpose configuration must be a valid JSON object")
 
-        method = config.get("method")
-        if method is None or not isinstance(method, str):
-            raise ValueError("Transpose 'method' must be provided as a string.")
+        if transpose_method is None or not isinstance(transpose_method, str):
+            raise ValueError(f"{self.key()} 'method' must be provided as a string.")
 
-        method_key = method.upper()
+        method_key: str = transpose_method.upper()
         if method_key not in TRANSPOSE_METHODS:
             raise ValueError(
-                f"Invalid transpose method '{method}'. Must be one of: {list(TRANSPOSE_METHODS.keys())}"
+                f"Invalid {self.key()} method '{transpose_method}'. Must be one of: {list(TRANSPOSE_METHODS.keys())}"
             )
 
         return image.transpose(TRANSPOSE_METHODS[method_key])

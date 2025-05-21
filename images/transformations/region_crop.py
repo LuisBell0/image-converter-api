@@ -5,7 +5,7 @@ from images.transformations.transformation_abstract import Transformation
 
 
 @register_transform
-class CropImage(Transformation):
+class CropImageRegion(Transformation):
     """
     Transformation that crops a PIL Image based on provided bounding box coordinates.
 
@@ -19,11 +19,11 @@ class CropImage(Transformation):
         Return the key used in the pipeline configuration dict to invoke this transformation.
 
         Returns:
-            str: The config key, "crop".
+            str: The config key, "region_crop".
         """
-        return "crop"
+        return "region_crop"
 
-    def apply(self, image: Image, config: dict) -> Image:
+    def apply(self, image: Image.Image, config: dict) -> Image.Image:
         """
         Crop the input image according to the given configuration.
 
@@ -39,17 +39,18 @@ class CropImage(Transformation):
             Image.Image: The cropped image.
 
         Raises:
+            TypeError: If config is not a dictionary.
             ValueError: If any coordinate cannot be converted to an integer,
                         or if the resulting box is invalid or out of bounds.
         """
         if not isinstance(config, dict):
-            raise ValueError("Crop configuration must be a JSON object")
+            raise TypeError(f"{self.key()} configuration must be a JSON object")
 
         img_width, img_height = image.size
-        left = config.get("left")
-        right = config.get("right")
-        upper = config.get("upper")
-        lower = config.get("lower")
+        left: int | str = config.get("left")
+        right: int | str = config.get("right")
+        upper: int | str = config.get("upper")
+        lower: int | str = config.get("lower")
 
         try:
             left = int(left) if left is not None else 0
@@ -57,7 +58,7 @@ class CropImage(Transformation):
             upper = int(upper) if upper is not None else 0
             lower = int(lower) if lower is not None else img_height
         except (TypeError, ValueError):
-            raise ValueError("Crop coordinates must be valid integers.")
+            raise ValueError(f"{self.key()} coordinates must be valid integers.")
 
         if not (0 <= left < right <= img_width and 0 <= upper < lower <= img_height):
             raise ValueError("Invalid crop box: "

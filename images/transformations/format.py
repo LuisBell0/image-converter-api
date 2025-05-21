@@ -17,14 +17,14 @@ class ConvertImageFormat(Transformation):
 
     def key(self) -> str:
         """
-        Return the key used in the pipeline configuration dict to invoke this transform.
+        Return the key used in the pipeline configuration dict to invoke this transformation.
 
         Returns:
             str: The config key, "format".
         """
         return "format"
 
-    def apply(self, image: Image, new_format: str) -> Image:
+    def apply(self, image: Image.Image, new_format: str) -> Image:
         """
         Convert the input image to a specified format.
 
@@ -40,12 +40,12 @@ class ConvertImageFormat(Transformation):
             ValueError: If `new_format` is not one of the allowed formats.
         """
         if not isinstance(new_format, str):
-            raise TypeError("Format configuration must be a string")
+            raise TypeError(f"{self.key()} configuration must be a string")
 
         valid_formats = {valid_format for valid_format, _ in FORMAT_CHOICES}
         if new_format.upper() not in valid_formats:
             allowed_formats = ', '.join(valid_formats)
-            raise ValueError(f'Format must be one of the following formats: {allowed_formats}')
+            raise ValueError(f'{self.key()} must be one of the following formats: {allowed_formats}')
         if not new_format:
             return image
 

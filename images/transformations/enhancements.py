@@ -29,7 +29,7 @@ class ImageEnhancer(Transformation):
 
     def key(self) -> str:
         """
-        Retrieve the configuration key for this transformation.
+        Return the key used in the pipeline configuration dict to invoke this transformation.
 
         Returns:
             str: The key name provided at initialization.

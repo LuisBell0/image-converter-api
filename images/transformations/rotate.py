@@ -17,7 +17,7 @@ class RotateImage(Transformation):
 
     def key(self) -> str:
         """
-        Return the key used in the pipeline configuration dict to invoke this transform.
+        Return the key used in the pipeline configuration dict to invoke this transformation.
 
         Returns:
             str: The config key, "resize".
@@ -39,14 +39,15 @@ class RotateImage(Transformation):
             Image.Image: The rotated image.
 
         Raises:
+            TypeError: If config is not a dictionary.
             ValueError: If config is not a dict or contains invalid types for angle, expand, or fillColor.
         """
         if not isinstance(config, dict):
-            raise ValueError("Rotate configuration must be a JSON object")
+            raise TypeError(f"{self.key()} configuration must be a JSON object")
 
-        angle = config.get("angle")
-        expand = config.get("expand", False)
-        fill_color = config.get("fillcolor", None)
+        angle: int | float = config.get("angle")
+        expand: bool = config.get("expand", False)
+        fill_color: str | None = config.get("fillcolor", None)
 
         if angle is None or not isinstance(angle, (int, float)):
             raise ValueError("Angle must be provided as an integer or float.")
@@ -55,9 +56,9 @@ class RotateImage(Transformation):
         if fill_color is not None and not isinstance(fill_color, str):
             raise ValueError("FillColor must be a string if provided.")
 
-        rotate_args = {"angle": angle, "expand": expand}
+        rotate_args: dict = {"angle": angle, "expand": expand}
         if fill_color:
             from PIL import ImageColor
-            rotate_args["fillcolor"] = ImageColor.getcolor(fill_color, 'RGB')
+            rotate_args["fillcolor"] = ImageColor.getcolor(color=fill_color, mode='RGB')
 
         return image.rotate(**rotate_args)

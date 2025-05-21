@@ -16,7 +16,7 @@ class ResizeImage(Transformation):
 
     def key(self) -> str:
         """
-        Return the key used in the pipeline configuration dict to invoke this transform.
+        Return the key used in the pipeline configuration dict to invoke this transformation.
 
         Returns:
             str: The config key, "resize".
@@ -37,17 +37,18 @@ class ResizeImage(Transformation):
             Image.Image: The resized image.
 
         Raises:
+            TypeError: If config is not a dictionary.
             ValueError: If width or height cannot be converted to an integer.
         """
         if not isinstance(config, dict):
-            raise ValueError("Resize configuration must be a JSON object")
+            raise TypeError(f"{self.key()} configuration must be a JSON object")
 
-        width = config.get("width") or None
-        height = config.get("height") or None
+        width: int | str = config.get("width") or None
+        height: int | str = config.get("height") or None
 
         try:
-            width = int(width) if width is not None else image.width
-            height = int(height) if height is not None else image.height
+            width: int = int(width) if width is not None else image.width
+            height: int = int(height) if height is not None else image.height
         except (TypeError, ValueError):
             raise ValueError("Width and height must be valid integers.")
 
