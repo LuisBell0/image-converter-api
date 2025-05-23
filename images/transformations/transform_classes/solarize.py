@@ -1,7 +1,8 @@
 from PIL import Image, ImageOps
 
 from images.transformations.registry import register_transform
-from images.transformations.transformation_abstract import Transformation
+from images.transformations.transform_classes.transformation_abstract import Transformation
+from images.transformations.validators import ConfigValidator
 
 
 @register_transform
@@ -40,9 +41,7 @@ class SolarizeImage(Transformation):
             TypeError: If `threshold` is not an integer.
             ValueError: If `threshold` is outside the valid range [0, 255].
         """
-        if not isinstance(threshold, int):
-            raise TypeError(f"{self.key()} threshold must be an integer; got {threshold!r}")
-        if threshold < 0 or threshold > 255:
-            raise ValueError(f"{self.key()} threshold must be between 0 and 255; got {threshold}")
+        validator = ConfigValidator(key=self.key())
+        threshold: int = validator.validate_positive_integer(value=threshold, value_name="threshold", max_value=255)
 
         return ImageOps.solarize(image=image, threshold=threshold)

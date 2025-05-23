@@ -1,32 +1,9 @@
-from PIL import Image, ImageFilter
+from PIL import Image
 
+from images.transformations.filters_mapping import BASIC_FILTERS, RANK_FILTERS, MULTIBAND_FILTERS
 from images.transformations.registry import register_transform
-from images.transformations.transformation_abstract import Transformation
-
-BASIC_FILTERS: dict = {
-    'BLUR': ImageFilter.BLUR,
-    'CONTOUR': ImageFilter.CONTOUR,
-    'DETAIL': ImageFilter.DETAIL,
-    'EDGE_ENHANCE': ImageFilter.EDGE_ENHANCE,
-    'EDGE_ENHANCE_MORE': ImageFilter.EDGE_ENHANCE_MORE,
-    'EMBOSS': ImageFilter.EMBOSS,
-    'FIND_EDGES': ImageFilter.FIND_EDGES,
-    'SHARPEN': ImageFilter.SHARPEN,
-    'SMOOTH': ImageFilter.SMOOTH,
-    'SMOOTH_MORE': ImageFilter.SMOOTH_MORE,
-}
-
-RANK_FILTERS: dict = {
-    'MIN': ImageFilter.MinFilter,
-    'MEDIAN': ImageFilter.MedianFilter,
-    'MAX': ImageFilter.MaxFilter,
-}
-
-MULTIBAND_FILTERS: dict = {
-    'UNSHARPMASK': ImageFilter.UnsharpMask,
-    'GAUSSIANBLUR': ImageFilter.GaussianBlur,
-    'BOXBLUR': ImageFilter.BoxBlur,
-}
+from images.transformations.transform_classes.transformation_abstract import Transformation
+from images.transformations.validators import ConfigValidator
 
 
 @register_transform
@@ -71,22 +48,15 @@ class BasicImageFilter(Transformation):
             ValueError:
                 If any filter name is not one of the supported keys.
         """
-        if not image_filter:
-            raise TypeError(f"{self.key()} value must be provided as a string or list of strings")
+        validator = ConfigValidator(key=self.key())
+        filters: list[str] = validator.validate_string_or_list_of_choices(
+            value=image_filter,
+            value_name="image_filter",
+            allowed=list(BASIC_FILTERS.keys())
+        )
 
-        if isinstance(image_filter, str):
-            filters: list[str] = [image_filter]
-        elif isinstance(image_filter, list):
-            if not all(isinstance(f, str) for f in image_filter):
-                raise TypeError(f"All {self.key()}'s must be strings")
-            filters: list[str] = image_filter
-        else:
-            raise TypeError(f"{self.key()} must be a string or a list of strings")
-
-        for f in filters:
-            if f not in BASIC_FILTERS:
-                raise ValueError(f"Unknown basic filter '{f}', must be one of: {list(BASIC_FILTERS.keys())}")
-            image = image.filter(BASIC_FILTERS[f])
+        for validated_fiter in filters:
+            image = image.filter(BASIC_FILTERS[validated_fiter])
 
         return image
 
@@ -127,25 +97,18 @@ class RankImageFilter(Transformation):
                        or if 'filter_name' is not a string.
             ValueError: If required keys are missing or filter_name is invalid.
         """
-        if not isinstance(config, dict):
-            raise TypeError(f"{self.key()} configuration must be a valid JSON object.")
+        validator = ConfigValidator(key=self.key())
+        config = validator.validate_dictionary(config_dict=config)
+        validator.validate_required_keys(config_dict=config, required=["size"])
 
-        size: int = config.get("size")
-        if size is None:
-            raise ValueError(f"{self.key()} missing required field 'size'.")
-        if not isinstance(size, int) or size <= 0:
-            raise TypeError(f"{self.key()} 'size' must be a positive integer.")
+        size: int = validator.validate_positive_integer(value=config.get("size"), value_name="size")
 
-        name: str = config.get("filter_name")
-        if name is None:
-            raise ValueError(f"{self.key()} missing required field 'filter_name'.")
-        if not isinstance(name, str):
-            raise TypeError(f"{self.key()} 'name' must be a string.")
-        filter_name: str = name.upper()
-        if filter_name not in RANK_FILTERS:
-            raise ValueError(f"Unknown {self.key()} '{filter_name}'. Must be one of: {list(RANK_FILTERS.keys())}")
-
-        return image.filter(RANK_FILTERS[filter_name](size=size))
+        method_name: str = validator.validate_choice(
+            value=config.get("filter_name"),
+            options=list(RANK_FILTERS.keys()),
+            value_name="filter_name",
+        )
+        return image.filter(RANK_FILTERS[method_name](size=size))
 
 
 @register_transform
@@ -190,24 +153,15 @@ class MultibandImageFilter(Transformation):
                        or if 'filter_name' is not a string.
             ValueError: If required keys are missing or filter_name is invalid.
         """
-        if not isinstance(config, dict):
-            raise TypeError(f"{self.key()} configuration must be a valid JSON object.")
+        validator = ConfigValidator(key=self.key())
+        config = validator.validate_dictionary(config_dict=config)
 
-        radius: int = config.get("radius")
-        if radius is None:
-            raise ValueError(f"{self.key()} missing required field 'radius'.")
-        if not isinstance(radius, (int, float)) or radius <= 0:
-            raise TypeError(f"{self.key()} 'radius' must be a positive integer.")
+        radius: int = validator.validate_number(value=config.get("radius"), value_name="radius", min_value=1)
 
-        name: str = config.get("filter_name")
-        if name is None:
-            raise ValueError(f"{self.key()} missing required field 'filter_name'.")
-        if not isinstance(name, str):
-            raise TypeError(f"{self.key()} 'name' must be a string.")
-        filter_name: str = name.upper()
-        if filter_name not in MULTIBAND_FILTERS:
-            raise ValueError(
-                f"Unknown {self.key()} '{filter_name}'. Must be one of: {list(MULTIBAND_FILTERS.keys())}"
-            )
+        method_name: str = validator.validate_choice(
+            value=config.get("filter_name"),
+            options=list(MULTIBAND_FILTERS.keys()),
+            value_name="filter_name"
+        )
 
-        return image.filter(MULTIBAND_FILTERS[filter_name](radius=radius))
+        return image.filter(MULTIBAND_FILTERS[method_name](radius=radius))

@@ -1,7 +1,8 @@
 from PIL import Image
 
 from images.transformations.registry import register_transform
-from images.transformations.transformation_abstract import Transformation
+from images.transformations.transform_classes.transformation_abstract import Transformation
+from images.transformations.validators import ConfigValidator
 
 TRANSPOSE_METHODS = {
     'FLIP_LEFT_RIGHT': Image.Transpose.FLIP_LEFT_RIGHT,
@@ -51,14 +52,11 @@ class TransposeImage(Transformation):
         Raises:
             ValueError: transpose_method is None, not a string or not in TRANSPOSE_METHODS.
         """
+        validator = ConfigValidator(key=self.key())
+        transpose_method = validator.validate_choice(
+            value=transpose_method,
+            value_name="transpose_method",
+            options=list(TRANSPOSE_METHODS.keys())
+        )
 
-        if transpose_method is None or not isinstance(transpose_method, str):
-            raise ValueError(f"{self.key()} 'method' must be provided as a string.")
-
-        method_key: str = transpose_method.upper()
-        if method_key not in TRANSPOSE_METHODS:
-            raise ValueError(
-                f"Invalid {self.key()} method '{transpose_method}'. Must be one of: {list(TRANSPOSE_METHODS.keys())}"
-            )
-
-        return image.transpose(TRANSPOSE_METHODS[method_key])
+        return image.transpose(TRANSPOSE_METHODS[transpose_method])

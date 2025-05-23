@@ -1,7 +1,8 @@
 from PIL import Image, ImageEnhance
 
-from images.transformations.transformation_abstract import Transformation
-from .registry import register_transform
+from images.transformations.registry import register_transform
+from images.transformations.transform_classes.transformation_abstract import Transformation
+from images.transformations.validators import ConfigValidator
 
 
 class ImageEnhancer(Transformation):
@@ -53,16 +54,12 @@ class ImageEnhancer(Transformation):
             ValueError: If `enhancement_value` is not an int or float, or if it is
                 negative.
         """
-        if not isinstance(enhancement_value, (float, int)):
-            raise ValueError(
-                f"Enhancement value for '{self._key}' must be a float or int,"
-                f" not {type(enhancement_value).__name__}"
-            )
-        if enhancement_value < 0:
-            raise ValueError(
-                f"Enhancement value for '{self._key}' must be >= 0,"
-                f" got {enhancement_value}"
-            )
+        validator = ConfigValidator(key=self.key())
+        enhancement_value = validator.validate_number(
+            value=enhancement_value,
+            value_name="enhancement_value",
+            min_value=0
+        )
 
         enhancer = self._enhancer_class(image)
         return enhancer.enhance(enhancement_value)

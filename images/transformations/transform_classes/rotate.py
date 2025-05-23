@@ -1,7 +1,8 @@
 from PIL import Image
 
 from images.transformations.registry import register_transform
-from images.transformations.transformation_abstract import Transformation
+from images.transformations.transform_classes.transformation_abstract import Transformation
+from images.transformations.validators import ConfigValidator
 
 
 @register_transform
@@ -42,19 +43,13 @@ class RotateImage(Transformation):
             TypeError: If config is not a dictionary.
             ValueError: If config is not a dict or contains invalid types for angle, expand, or fillColor.
         """
-        if not isinstance(config, dict):
-            raise TypeError(f"{self.key()} configuration must be a JSON object")
+        validator = ConfigValidator(key=self.key())
+        config = validator.validate_dictionary(config_dict=config)
+        validator.validate_required_keys(config_dict=config, required=["angle"])
 
-        angle: int | float = config.get("angle")
-        expand: bool = config.get("expand", False)
-        fill_color: str | None = config.get("fillcolor", None)
-
-        if angle is None or not isinstance(angle, (int, float)):
-            raise ValueError("Angle must be provided as an integer or float.")
-        if not isinstance(expand, bool):
-            raise ValueError("Expand must be boolean if provided.")
-        if fill_color is not None and not isinstance(fill_color, str):
-            raise ValueError("FillColor must be a string if provided.")
+        angle: int | float = validator.validate_number(value=config.get("angle"), value_name="angle")
+        expand: bool = validator.validate_optional_bool(config.get("expand"), value_name="expand")
+        fill_color: str | None = validator.validate_optional_str(config.get("fillcolor"), value_name="fillcolor")
 
         rotate_args: dict = {"angle": angle, "expand": expand}
         if fill_color:

@@ -1,7 +1,8 @@
 from PIL import Image
 
-from images.transformations.transformation_abstract import Transformation
-from .registry import register_transform
+from images.transformations.registry import register_transform
+from images.transformations.transform_classes.transformation_abstract import Transformation
+from images.transformations.validators import ConfigValidator
 
 
 @register_transform
@@ -30,8 +31,8 @@ class ResizeImage(Transformation):
         Args:
             image (Image.Image): The source PIL Image to transform.
             config (dict): Dictionary containing resize parameters:
-                - width (int or str, optional): Target width in pixels.
-                - height (int or str, optional): Target height in pixels.
+                - width (int): Target width in pixels.
+                - height (int): Target height in pixels.
 
         Returns:
             Image.Image: The resized image.
@@ -40,16 +41,12 @@ class ResizeImage(Transformation):
             TypeError: If config is not a dictionary.
             ValueError: If width or height cannot be converted to an integer.
         """
-        if not isinstance(config, dict):
-            raise TypeError(f"{self.key()} configuration must be a JSON object")
+        print("ran")
 
-        width: int | str = config.get("width") or None
-        height: int | str = config.get("height") or None
+        validator = ConfigValidator(self.key())
+        config = validator.validate_dictionary(config_dict=config)
 
-        try:
-            width: int = int(width) if width is not None else image.width
-            height: int = int(height) if height is not None else image.height
-        except (TypeError, ValueError):
-            raise ValueError("Width and height must be valid integers.")
+        width: int = validator.validate_positive_integer(value=config.get("width", None), value_name="width")
+        height: int = validator.validate_positive_integer(value=config.get("height", None), value_name="height")
 
         return image.resize((width, height))

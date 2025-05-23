@@ -1,17 +1,17 @@
 from PIL import Image, ImageOps
 
 from images.transformations.registry import register_transform
-from images.transformations.transformation_abstract import Transformation
+from images.transformations.transform_classes.transformation_abstract import Transformation
 
 
 @register_transform
-class GrayscaleImage(Transformation):
+class EqualizeImage(Transformation):
     """
-    Convert an image to grayscale.
+    Apply histogram equalization to an image to enhance contrast.
 
-    This transform converts an RGB or multi-band image into its
-    luminance equivalent, discarding color information. No parameters
-    are required.
+    This transform does not take any parameters—if it’s in your pipeline,
+    it always runs.  To include it in the pipeline, set its config value to
+    null (None) or an empty dict.
     """
     def __init__(self):
         super().__init__()
@@ -21,13 +21,13 @@ class GrayscaleImage(Transformation):
         Return the key used in the pipeline configuration dict to invoke this transformation.
 
         Returns:
-            str: "grayscale"
+            str: "equalize"
         """
-        return "grayscale"
+        return "equalize"
 
     def apply(self, image: Image.Image, params=None) -> Image.Image:
         """
-        Perform a grayscale conversion on the provided image.
+        Perform histogram equalization on the provided image.
 
         Args:
             image (Image.Image): The source PIL image.
@@ -35,11 +35,11 @@ class GrayscaleImage(Transformation):
                 this transform does not accept parameters.
 
         Returns:
-            Image.Image: A new image in grayscale ("L" mode).
+            Image.Image: A new image with equalized histogram.
 
         Raises:
             TypeError: If `params` is not None or an empty container.
         """
         if params not in (None, {}, []):
             raise TypeError(f"{self.key()} does not accept parameters; got: {params!r}")
-        return ImageOps.grayscale(image)
+        return ImageOps.equalize(image)

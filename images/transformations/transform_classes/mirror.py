@@ -1,16 +1,16 @@
 from PIL import Image, ImageOps
 
 from images.transformations.registry import register_transform
-from images.transformations.transformation_abstract import Transformation
+from images.transformations.transform_classes.transformation_abstract import Transformation
 
 
 @register_transform
-class FlipImage(Transformation):
+class MirrorImage(Transformation):
     """
-    Flip an image vertically (top-to-bottom).
+    Mirror an image horizontally (left-to-right).
 
-    This transform produces a vertical mirror of the input image by
-    inverting it along the horizontal axis. No parameters are required.
+    This transform creates a horizontal reflection of the input image
+    by swapping its left and right sides. No parameters are required.
     """
     def __init__(self):
         super().__init__()
@@ -20,13 +20,13 @@ class FlipImage(Transformation):
         Return the key used in the pipeline configuration dict to invoke this transformation.
 
         Returns:
-            str: "flip"
+            str: "mirror"
         """
-        return "flip"
+        return "mirror"
 
     def apply(self, image: Image.Image, params=None) -> Image.Image:
         """
-        Perform a vertical flip on the provided image.
+        Perform a horizontal mirror on the provided image.
 
         Args:
             image (Image.Image): The source PIL image.
@@ -34,11 +34,11 @@ class FlipImage(Transformation):
                 this transform does not accept parameters.
 
         Returns:
-            Image.Image: A new image flipped vertically.
+            Image.Image: A new image mirrored horizontally.
 
         Raises:
             TypeError: If `params` is not None or an empty container.
         """
         if params not in (None, {}, []):
             raise TypeError(f"{self.key()} does not accept parameters; got: {params!r}")
-        return ImageOps.flip(image)
+        return ImageOps.mirror(image)

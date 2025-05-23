@@ -1,7 +1,8 @@
 from PIL import Image, ImageOps
 
 from images.transformations.registry import register_transform
-from images.transformations.transformation_abstract import Transformation
+from images.transformations.transform_classes.transformation_abstract import Transformation
+from images.transformations.validators import ConfigValidator
 
 
 @register_transform
@@ -40,9 +41,7 @@ class PosterizeImage(Transformation):
             TypeError: If `bits` is not an integer.
             ValueError: If `bits` is outside the valid range [1, 8].
         """
-        if not isinstance(bits, int):
-            raise TypeError(f"{self.key()} bits must be an integer; got {bits!r}")
-        if bits < 1 or bits > 8:
-            raise ValueError(f"{self.key()} bits must be between 1 and 8; got {bits}")
+        validator = ConfigValidator(key=self.key())
+        bits = validator.validate_positive_integer(value=bits, value_name="bits", max_value=8)
 
         return ImageOps.posterize(image=image, bits=bits)

@@ -1,8 +1,9 @@
 from PIL import Image
 
-from .registry import register_transform
+from images.models import FORMAT_CHOICES
+from images.transformations.registry import register_transform
+from images.transformations.validators import ConfigValidator
 from .transformation_abstract import Transformation
-from ..models import FORMAT_CHOICES
 
 
 @register_transform
@@ -24,7 +25,7 @@ class ConvertImageFormat(Transformation):
         """
         return "format"
 
-    def apply(self, image: Image.Image, new_format: str) -> Image:
+    def apply(self, image: Image.Image, new_format: str) -> Image.Image:
         """
         Convert the input image to a specified format.
 
@@ -39,14 +40,8 @@ class ConvertImageFormat(Transformation):
             TypeError: If `new_format` is not a string.
             ValueError: If `new_format` is not one of the allowed formats.
         """
-        if not isinstance(new_format, str):
-            raise TypeError(f"{self.key()} configuration must be a string")
-
-        valid_formats = {valid_format for valid_format, _ in FORMAT_CHOICES}
-        if new_format.upper() not in valid_formats:
-            allowed_formats = ', '.join(valid_formats)
-            raise ValueError(f'{self.key()} must be one of the following formats: {allowed_formats}')
-        if not new_format:
-            return image
+        validator = ConfigValidator(key=self.key())
+        valid_formats = list({valid_format for valid_format, _ in FORMAT_CHOICES})
+        new_format = validator.validate_choice(value=new_format, options=valid_formats)
 
         return image.convert("RGB") if new_format.lower() in ["jpeg", "jpg", "webp"] else image

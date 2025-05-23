@@ -1,7 +1,8 @@
 from PIL import ImageOps, Image
 
 from images.transformations.registry import register_transform
-from images.transformations.transformation_abstract import Transformation
+from images.transformations.transform_classes.transformation_abstract import Transformation
+from images.transformations.validators import ConfigValidator
 
 
 @register_transform
@@ -36,9 +37,7 @@ class CropImageBorder(Transformation):
             TypeError: If `border` is not an integer.
             ValueError: If `border` is less than 1.
         """
-        if not isinstance(border, int):
-            raise TypeError(f"{self.key()} value must be an integer")
-        if border < 1:
-            raise ValueError(f"{self.key()} value must be a positive integer")
+        validator = ConfigValidator(key=self.key())
+        border = validator.validate_positive_integer(value=border, value_name="border")
 
         return ImageOps.crop(image=image, border=border)

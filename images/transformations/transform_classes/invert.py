@@ -1,16 +1,16 @@
 from PIL import Image, ImageOps
 
 from images.transformations.registry import register_transform
-from images.transformations.transformation_abstract import Transformation
+from images.transformations.transform_classes.transformation_abstract import Transformation
 
 
 @register_transform
-class MirrorImage(Transformation):
+class InvertImage(Transformation):
     """
-    Mirror an image horizontally (left-to-right).
+    Invert an image’s colors.
 
-    This transform creates a horizontal reflection of the input image
-    by swapping its left and right sides. No parameters are required.
+    This transform produces a photographic negative by mapping each pixel
+    value to 255 − original. Only works on “L”, “RGB”, or multi-band images.
     """
     def __init__(self):
         super().__init__()
@@ -20,13 +20,13 @@ class MirrorImage(Transformation):
         Return the key used in the pipeline configuration dict to invoke this transformation.
 
         Returns:
-            str: "mirror"
+            str: "invert"
         """
-        return "mirror"
+        return "invert"
 
     def apply(self, image: Image.Image, params=None) -> Image.Image:
         """
-        Perform a horizontal mirror on the provided image.
+        Perform color inversion on the provided image.
 
         Args:
             image (Image.Image): The source PIL image.
@@ -34,11 +34,11 @@ class MirrorImage(Transformation):
                 this transform does not accept parameters.
 
         Returns:
-            Image.Image: A new image mirrored horizontally.
+            Image.Image: A new image with inverted colors.
 
         Raises:
             TypeError: If `params` is not None or an empty container.
         """
         if params not in (None, {}, []):
             raise TypeError(f"{self.key()} does not accept parameters; got: {params!r}")
-        return ImageOps.mirror(image)
+        return ImageOps.invert(image)

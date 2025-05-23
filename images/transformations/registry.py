@@ -1,6 +1,6 @@
 from typing import Dict
 
-from .transformation_abstract import Transformation
+from images.transformations.transform_classes.transformation_abstract import Transformation
 
 _registry: Dict[str, Transformation] = {}
 
