@@ -49,10 +49,11 @@ class BasicImageFilter(Transformation):
                 If any filter name is not one of the supported keys.
         """
         validator = ConfigValidator(key=self.key())
-        filters: list[str] = validator.validate_string_or_list_of_choices(
+        filters: list[str] = validator.validate_str(
             value=image_filter,
             value_name="image_filter",
-            allowed=list(BASIC_FILTERS.keys())
+            allowed=list(BASIC_FILTERS.keys()),
+            multiple=True
         )
 
         for validated_fiter in filters:
@@ -101,7 +102,7 @@ class RankImageFilter(Transformation):
         config = validator.validate_dictionary(config_dict=config)
         validator.validate_required_keys(config_dict=config, required=["size"])
 
-        size: int = validator.validate_positive_integer(value=config.get("size"), value_name="size")
+        size: int = validator.validate_number(value=config.get("size"), value_name="size", allowed_types=(int,))
 
         method_name: str = validator.validate_choice(
             value=config.get("filter_name"),

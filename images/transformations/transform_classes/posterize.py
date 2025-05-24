@@ -42,6 +42,6 @@ class PosterizeImage(Transformation):
             ValueError: If `bits` is outside the valid range [1, 8].
         """
         validator = ConfigValidator(key=self.key())
-        bits = validator.validate_positive_integer(value=bits, value_name="bits", max_value=8)
+        bits: int = validator.validate_number(value=bits, value_name="bits", allowed_types=(int,), max_value=8)
 
         return ImageOps.posterize(image=image, bits=bits)

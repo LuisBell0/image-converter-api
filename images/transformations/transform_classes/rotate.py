@@ -48,8 +48,12 @@ class RotateImage(Transformation):
         validator.validate_required_keys(config_dict=config, required=["angle"])
 
         angle: int | float = validator.validate_number(value=config.get("angle"), value_name="angle")
-        expand: bool = validator.validate_optional_bool(config.get("expand"), value_name="expand")
-        fill_color: str | None = validator.validate_optional_str(config.get("fillcolor"), value_name="fillcolor")
+        expand: bool = validator.validate_optional_bool(value=config.get("expand"), value_name="expand")
+        fill_color: str | None = validator.validate_str(
+            value=config.get("fillcolor"),
+            value_name="fillcolor",
+            optional=True,
+        )
 
         rotate_args: dict = {"angle": angle, "expand": expand}
         if fill_color:

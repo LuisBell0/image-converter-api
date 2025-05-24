@@ -46,7 +46,12 @@ class ContainImage(Transformation):
 
         validator.validate_required_keys(required=["size"], config_dict=config)
 
-        size: tuple[int, int] = validator.validate_int_tuple(value=config.get("size"), value_name="size", length=2)
+        size: tuple[int, int] = validator.validate_number_tuple(
+            value=config.get("size"),
+            value_name="size",
+            allowed_types=(int,),
+            length=2
+        )
 
         method_key: str = validator.validate_choice(
             value_name="method",

@@ -41,12 +41,18 @@ class ResizeImage(Transformation):
             TypeError: If config is not a dictionary.
             ValueError: If width or height cannot be converted to an integer.
         """
-        print("ran")
-
         validator = ConfigValidator(self.key())
         config = validator.validate_dictionary(config_dict=config)
 
-        width: int = validator.validate_positive_integer(value=config.get("width", None), value_name="width")
-        height: int = validator.validate_positive_integer(value=config.get("height", None), value_name="height")
+        width: int = validator.validate_number(
+            value=config.get("width", None),
+            value_name="width",
+            allowed_types=(int,)
+        )
+        height: int = validator.validate_number(
+            value=config.get("height", None),
+            value_name="height",
+            allowed_types=(int,)
+        )
 
         return image.resize((width, height))

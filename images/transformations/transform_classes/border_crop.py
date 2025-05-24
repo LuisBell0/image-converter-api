@@ -38,6 +38,6 @@ class CropImageBorder(Transformation):
             ValueError: If `border` is less than 1.
         """
         validator = ConfigValidator(key=self.key())
-        border = validator.validate_positive_integer(value=border, value_name="border")
+        border: int = validator.validate_number(value=border, value_name="border", allowed_types=(int,))
 
         return ImageOps.crop(image=image, border=border)

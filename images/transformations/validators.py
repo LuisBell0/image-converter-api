@@ -1,4 +1,4 @@
-from typing import Any, Union, Tuple, Type
+from typing import Any, Union, Tuple, Type, Optional
 
 Numeric = Union[int, float]
 
@@ -28,59 +28,6 @@ class ConfigValidator:
             if field not in config_dict:
                 raise ValueError(self._error(value_name="object", message=f"missing required configuration key '{field}'"))
 
-    def validate_positive_integer(self, value: Any, value_name: str = "Value", max_value: int = None) -> int:
-        """Ensure an integer >= 1 and <= max_value if provided."""
-        self._ensure_type(value=value, types=(int,), value_name=value_name)
-        if value < 1:
-            raise ValueError(self._error(value_name=value_name, message=f"must be >= 1; got {value}"))
-        if max_value is not None and value > max_value:
-            raise ValueError(self._error(value_name=value_name, message=f"must be <= {max_value}; got {value}"))
-        return value
-
-    def validate_int_tuple(self, value: Any, length: int, value_name: str = "Value") -> tuple[int, int]:
-        """Ensure a list/tuple of `length` positive ints and return it as a tuple."""
-        self._ensure_type(value=value, types=(tuple, list), value_name=value_name)
-        if len(value) != length:
-            raise TypeError(self._error(
-                value_name=value_name,
-                message=f"must be a tuple of {length} ints; got {value!r}"
-            ))
-        for element in value:
-            self._ensure_type(value=element, types=(int,), value_name=value_name)
-        if any(element <= 0 for element in value):
-            raise ValueError(self._error(
-                value_name=value_name,
-                message=f"values must be positive; got {value!r}"
-            ))
-        return tuple[int, int](value)
-
-    def validate_choice(self, value: Any, options: list[str], value_name: str = "Value") -> str:
-        """Validate `value` is a string in `options` and return it uppercase."""
-        self._ensure_type(value=value, types=(str,), value_name=value_name)
-        normalized = value.upper()
-        if normalized not in options:
-            raise ValueError(self._error(value_name=value_name, message=f"must be one of {options}; got {value!r}"))
-        return normalized
-
-    def validate_string_or_list_of_choices(self, value: Any, allowed: list[str], value_name: str = "Value") -> list[str]:
-        """
-        Validate a string or list of strings against allowed choices and return a normalized list.
-        """
-        if isinstance(value, str):
-            values = [value]
-        elif isinstance(value, list):
-            if not all(isinstance(item, str) for item in value):
-                raise TypeError(self._error(value_name=value_name, message="must be a list of strings"))
-            values = value
-        else:
-            raise TypeError(self._error(value_name=value_name, message="must be a string or a list of strings"))
-
-        for item in values:
-            if item not in allowed:
-                raise ValueError(self._error(value_name=value_name, message=f"must be one of {allowed}; got '{item}'"))
-
-        return values
-
     def validate_number(
         self,
         value: Any,
@@ -97,21 +44,110 @@ class ConfigValidator:
             raise ValueError(self._error(value_name=value_name, message=f"must be <= {max_value}; got {value}"))
         return value
 
-    def validate_border(self, value: Any, value_name: str = "Value") -> tuple[int, int, int, int]:
-        """Normalize border as a non-negative 4-tuple of ints."""
-        if isinstance(value, int):
-            if value < 0:
-                raise ValueError(self._error(value_name=value_name, message=f"must be non-negative; got {value}"))
-            return (value,) * 4
+    def validate_number_tuple(
+            self,
+            value: Any,
+            length: int,
+            value_name: str = "Value",
+            allowed_types: Tuple[Type, ...] = (int, float)
+    ) -> tuple[Numeric, Numeric]:
+        """Ensure a list/tuple of `length` positive ints and return it as a tuple."""
+        self._ensure_type(value=value, types=(tuple, list), value_name=value_name)
+        if len(value) != length:
+            raise TypeError(self._error(
+                value_name=value_name,
+                message=f"must be a tuple of {length} ints; got {value!r}"
+            ))
+        for element in value:
+            self._ensure_type(value=element, types=allowed_types, value_name=value_name)
+        if any(element <= 0 for element in value):
+            raise ValueError(self._error(
+                value_name=value_name,
+                message=f"values must be positive; got {value!r}"
+            ))
+        return value
 
-        if isinstance(value, (tuple, list)):
-            if len(value) != 4 or not all(isinstance(v, int) for v in value):
-                raise TypeError(self._error(value_name=value_name, message=f"must be a 4-tuple of ints; got {value!r}"))
-            if any(v < 0 for v in value):
-                raise ValueError(self._error(value_name=value_name, message=f"values must be non-negative; got {value!r}"))
-            return tuple[int, int, int, int](value)
+    def validate_choice(self, value: Any, options: list[str], value_name: str = "Value") -> str:
+        """Validate `value` is a string in `options` and return it uppercase."""
+        self._ensure_type(value=value, types=(str,), value_name=value_name)
+        normalized = value.upper()
+        if normalized not in options:
+            raise ValueError(self._error(value_name=value_name, message=f"must be one of {options}; got {value!r}"))
+        return normalized
 
-        raise TypeError(self._error(value_name=value_name, message=f"must be an int or 4-tuple of ints; got {type(value).__name__}"))
+    def validate_optional_bool(self, value: Any, value_name: str = "Value") -> bool:
+        """
+        Accepts a bool or None (returning False). Raises if provided value is non‐bool.
+        """
+        if value is None:
+            return False
+        self._ensure_type(value=value, types=(bool,), value_name=value_name)
+        return value
+
+    def validate_str(
+        self,
+        value: Any,
+        *,
+        value_name: str = "Value",
+        optional: bool = False,
+        multiple: bool = False,
+        allowed: Optional[list[str]] = None,
+    ) -> Union[None, str, list[str]]:
+        """
+        Validate a str (or list of str) according to the flags:
+
+        - optional: if True, allow `value` to be None
+        - multiple: if True, allow list[str]; otherwise only a single str
+        - allowed: if provided, each str must be in this list
+
+        Returns:
+          - None                if `optional` and `value is None`
+          - str                 if not `multiple`
+          - list[str]           if `multiple`
+        Raises:
+          - TypeError or ValueError with a standardized message
+        """
+        if value is None:
+            if optional:
+                return None
+            else:
+                raise TypeError(self._error(
+                    value_name=value_name,
+                    message="must not be null"
+                ))
+
+        if multiple:
+            if isinstance(value, str):
+                items = [value]
+            elif isinstance(value, list):
+                if not all(isinstance(v, str) for v in value):
+                    raise TypeError(self._error(
+                        value_name=value_name,
+                        message="must be a list of strings"
+                    ))
+                items = value
+            else:
+                raise TypeError(self._error(
+                    value_name=value_name,
+                    message="must be a string or a list of strings"
+                ))
+        else:
+            if not isinstance(value, str):
+                raise TypeError(self._error(
+                    value_name=value_name,
+                    message="must be a string"
+                ))
+            items = [value]
+
+        if allowed is not None:
+            for item in items:
+                if item not in allowed:
+                    raise ValueError(self._error(
+                        value_name=value_name,
+                        message=f"must be one of {allowed}; got '{item}'"
+                    ))
+
+        return items if multiple else items[0]
 
     def validate_color(
         self,
@@ -130,6 +166,22 @@ class ConfigValidator:
             return color_tuple
 
         return value
+
+    def validate_border(self, value: Any, value_name: str = "Value") -> tuple[int, int, int, int]:
+        """Normalize border as a non-negative 4-tuple of ints."""
+        if isinstance(value, int):
+            if value < 0:
+                raise ValueError(self._error(value_name=value_name, message=f"must be non-negative; got {value}"))
+            return (value,) * 4
+
+        if isinstance(value, (tuple, list)):
+            if len(value) != 4 or not all(isinstance(v, int) for v in value):
+                raise TypeError(self._error(value_name=value_name, message=f"must be a 4-tuple of ints; got {value!r}"))
+            if any(v < 0 for v in value):
+                raise ValueError(self._error(value_name=value_name, message=f"values must be non-negative; got {value!r}"))
+            return tuple[int, int, int, int](value)
+
+        raise TypeError(self._error(value_name=value_name, message=f"must be an int or 4-tuple of ints; got {type(value).__name__}"))
 
     def validate_centering(
         self,
@@ -183,21 +235,3 @@ class ConfigValidator:
                 f"0 ≤ upper({upper}) < lower({lower}) ≤ height({img_height})"
             )
         return left, upper, right, lower
-
-    def validate_optional_bool(self, value: Any, value_name: str = "Value") -> bool:
-        """
-        Accepts a bool or None (returning False). Raises if provided value is non‐bool.
-        """
-        if value is None:
-            return False
-        self._ensure_type(value=value, types=(bool,), value_name=value_name)
-        return value
-
-    def validate_optional_str(self, value: Any, value_name: str = "Value") -> str | None:
-        """
-        Accepts a str or None. Raises if provided value is non‐str.
-        """
-        if value is None:
-            return None
-        self._ensure_type(value=value, types=(str,), value_name=value_name)
-        return value

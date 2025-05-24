@@ -51,19 +51,30 @@ class PadImage(Transformation):
         config = validator.validate_dictionary(config_dict=config)
         validator.validate_required_keys(config_dict=config, required=["size"])
 
-        size = validator.validate_int_tuple(value=config.get("size"), value_name="size", length=2)
+        size: tuple[int, int] = validator.validate_number_tuple(
+            value=config.get("size"),
+            value_name="size",
+            allowed_types=(int,),
+            length=2
+        )
 
-        method_key = validator.validate_choice(
+        method_key: str = validator.validate_choice(
             value=config.get('method', 'BICUBIC'),
             value_name="method",
             options=list(RESAMPLING_FILTERS.keys())
         )
 
-        resample_filter = RESAMPLING_FILTERS[method_key]
+        resample_filter: int = RESAMPLING_FILTERS[method_key]
 
-        color = validator.validate_color(value=config.get('color', 0), value_name="color")
+        color: str | int | tuple[int, ...] | None = validator.validate_color(
+            value=config.get('color', 0),
+            value_name="color"
+        )
 
-        centering = validator.validate_centering(value=config.get('centering', (0.5, 0.5)), value_name="centering")
+        centering: tuple[float, float] = validator.validate_centering(
+            value=config.get('centering', (0.5, 0.5)),
+            value_name="centering"
+        )
 
         return ImageOps.pad(
             image,

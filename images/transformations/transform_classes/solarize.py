@@ -42,6 +42,11 @@ class SolarizeImage(Transformation):
             ValueError: If `threshold` is outside the valid range [0, 255].
         """
         validator = ConfigValidator(key=self.key())
-        threshold: int = validator.validate_positive_integer(value=threshold, value_name="threshold", max_value=255)
+        threshold: int = validator.validate_number(
+            value=threshold,
+            value_name="threshold",
+            allowed_types=(int,),
+            max_value=255
+        )
 
         return ImageOps.solarize(image=image, threshold=threshold)
