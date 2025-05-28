@@ -71,8 +71,9 @@ class PadImage(Transformation):
             value_name="color"
         )
 
-        centering: tuple[float, float] = validator.validate_centering(
+        centering: tuple[float, float] = self.validate_centering(
             value=config.get('centering', (0.5, 0.5)),
+            validator=validator,
             value_name="centering"
         )
 
@@ -83,3 +84,31 @@ class PadImage(Transformation):
             color=color,
             centering=centering
         )
+
+    @staticmethod
+    def validate_centering(
+            value: tuple[float, float],
+            validator: ConfigValidator,
+            value_name: str = "Value"
+    ) -> tuple[float, float]:
+        """
+        Validate that `value` is a 2-tuple (or list) of numbers between 0.0 and 1.0.
+
+        Args:
+            value (tuple[float, float]): The value to validate.
+            validator (ConfigValidator): Validator instance for checking.
+            value_name (str): The name of the value to validate.
+
+        Returns:
+             tuple[float, float]: The normalized value as a (float, float) tuple.
+        """
+        value = validator.validate_number_tuple(value=value, value_name=value_name, allowed_types=(float,), length=2)
+        center_x, center_y = value
+
+        if not (0.0 <= center_x <= 1.0 and 0.0 <= center_y <= 1.0):
+            raise ValueError(validator.error(
+                value_name=value_name,
+                message=f"values must be between 0.0 and 1.0; got {value!r}"
+            ))
+
+        return float(center_x), float(center_y)

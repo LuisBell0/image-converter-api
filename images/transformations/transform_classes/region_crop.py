@@ -53,13 +53,58 @@ class CropImageRegion(Transformation):
         upper: int = config.get("upper", 0)
         lower: int = config.get("lower", img_height)
 
-        left, upper, right, lower = validator.validate_crop_box(
+        left, upper, right, lower = self.validate_crop_box(
             left=left,
             upper=upper,
             right=right,
             lower=lower,
             img_width=img_width,
-            img_height=img_height
+            img_height=img_height,
+            validator=validator
         )
 
         return image.crop(box=(left, upper, right, lower))
+
+    @staticmethod
+    def validate_crop_box(
+        left: int, upper: int, right: int, lower: int,
+        img_width: int,
+        img_height: int,
+        validator: ConfigValidator
+    ) -> tuple[int, int, int, int]:
+        """
+        Validates cropping box coordinates against image dimensions.
+
+        Ensures that the provided crop box coordinates (`left`, `upper`, `right`, `lower`)
+        are integers and form a valid rectangle within the bounds of the image.
+
+        Args:
+            left (int): The left x-coordinate.
+            upper (int): The upper y-coordinate.
+            right (int): The right x-coordinate.
+            lower (int): The lower y-coordinate.
+            img_width (int): The image width.
+            img_height (int): The image height.
+            validator (ConfigValidator): Validator instance for checking.
+
+        Returns:
+            tuple[int, int, int, int]: The validated crop box as a tuple (left, upper, right, lower).
+
+        Raises:
+            TypeError: If any coordinate is not an integer.
+            ValueError: If the crop box coordinates are not within the image bounds or do not form a valid box.
+        """
+        for name, coord in (("left", left), ("upper", upper),
+                            ("right", right), ("lower", lower)):
+            validator.ensure_type(value=coord, types=(int,), value_name=name)
+        if not (0 <= left < right <= img_width):
+            raise ValueError(
+                f"{validator.key} invalid horizontal crop coords: "
+                f"0 ≤ left({left}) < right({right}) ≤ width({img_width})"
+            )
+        if not (0 <= upper < lower <= img_height):
+            raise ValueError(
+                f"{validator.key} invalid vertical crop coords: "
+                f"0 ≤ upper({upper}) < lower({lower}) ≤ height({img_height})"
+            )
+        return left, upper, right, lower

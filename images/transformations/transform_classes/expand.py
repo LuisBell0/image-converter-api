@@ -47,8 +47,43 @@ class ExpandImage(Transformation):
         config = validator.validate_dictionary(config_dict=config)
         validator.validate_required_keys(config_dict=config, required=["border"])
 
-        border: int | tuple[int, ...] = validator.validate_border(value=config.get("border"), value_name="border")
+        border: int | tuple[int, ...] = self.validate_border(value=config.get("border"), validator=validator)
 
         fill: str | int | tuple[int, ...] = validator.validate_color(value=config.get("fill", 0), value_name="fill")
 
         return ImageOps.expand(image, border=border, fill=fill)
+
+    @staticmethod
+    def validate_border(value: int | tuple[int, ...], validator: ConfigValidator) -> int | tuple[int, ...]:
+        """
+        Validates the `border` value, ensuring it is either a non-negative integer or a 4-tuple of non-negative integers.
+
+        Args:
+            value (int or tuple of int): The border value to validate.
+            validator (ConfigValidator): Validator instance for type and range checking.
+
+        Returns:
+            int or tuple of int: The validated border value.
+
+        Raises:
+            ValueError: If the integer is negative or the tuple contains invalid values.
+            TypeError: If the value is not an integer or a 4-tuple/list of integers.
+        """
+        if isinstance(value, int):
+            if value < 0:
+                raise ValueError(validator.error(value_name="border", message=f"must be non-negative; got {value}"))
+            return value
+
+        if isinstance(value, (tuple, list)):
+            validated = validator.validate_number_tuple(
+                value=value,
+                value_name="border",
+                allowed_types=(int,),
+                length=4
+            )
+            return tuple(validated)
+
+        raise TypeError(validator.error(
+            value_name="border",
+            message=f"must be an int or 4-tuple of ints; got {type(value).__name__}")
+        )
