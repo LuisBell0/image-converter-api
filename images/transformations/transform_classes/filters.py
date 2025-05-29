@@ -87,8 +87,8 @@ class RankImageFilter(Transformation):
         Args:
             image (Image.Image): The source image to transform.
             config (dict): Configuration object containing:
-                - 'size' (int): positive integer window size for the filter.
-                - 'filter_name' (str): name of the rank filter to apply.
+                - size (int): positive integer window size for the filter.
+                - filter_name (str): name of the rank filter to apply.
 
         Returns:
             Image.Image: The filtered image.

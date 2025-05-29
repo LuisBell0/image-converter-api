@@ -32,8 +32,8 @@ class ScaleImage(Transformation):
         Args:
             image (Image.Image): The source image.
             config (dict): Must contain:
-                - "factor" (float or int): Scale multiplier.
-                - "resample" (str, optional): Name of resampling filter.
+                - factor (float or int): Scale multiplier.
+                - resample (str, optional): Name of resampling filter.
 
         Returns:
             Image.Image: Scaled image.

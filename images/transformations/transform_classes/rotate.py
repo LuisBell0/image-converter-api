@@ -33,7 +33,7 @@ class RotateImage(Transformation):
             image (Image.Image): The source PIL Image to transform.
             config (dict): A dictionary with the following optional keys:
                 - angle (int or float): The rotation angle in degrees (required).
-                - expand (bool): Whether to expand the output image to hold the entire rotated image (default False).
+                - expand (bool, optional): Whether to expand the output image to hold the entire rotated image (default False).
                 - fillColor (str, optional): Color string to fill background areas exposed by the rotation (e.g., "white").
 
         Returns:
@@ -50,8 +50,8 @@ class RotateImage(Transformation):
         angle: int | float = validator.validate_number(value=config.get("angle"), value_name="angle")
         expand: bool = validator.validate_optional_bool(value=config.get("expand"), value_name="expand")
         fill_color: str | None = validator.validate_str(
-            value=config.get("fillcolor"),
-            value_name="fillcolor",
+            value=config.get("fill_color"),
+            value_name="fill_color",
             optional=True,
         )
 

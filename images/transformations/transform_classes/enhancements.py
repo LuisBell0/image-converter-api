@@ -37,13 +37,13 @@ class ImageEnhancer(Transformation):
         """
         return self._key
 
-    def apply(self, image: Image.Image, enhancement_value: float | int) -> Image.Image:
+    def apply(self, image: Image.Image, factor: float | int) -> Image.Image:
         """
         Apply the enhancement to the given PIL image.
 
         Args:
             image (Image.Image): The source image to transform.
-            enhancement_value (int or float): A non-negative numeric factor.
+            factor (int or float): A non-negative numeric factor.
                 Values > 1 amplify the effect (e.g., brighter, sharper),
                 values < 1 reduce/mute the effect.
 
@@ -56,7 +56,7 @@ class ImageEnhancer(Transformation):
         """
         validator = ConfigValidator(key=self.key())
         enhancement_value = validator.validate_number(
-            value=enhancement_value,
+            value=factor,
             value_name="enhancement_value",
             min_value=0
         )
