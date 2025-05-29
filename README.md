@@ -9,16 +9,16 @@ Image Converter API is a Django REST Framework project for transforming images v
 
 ## Table of Contents
 
-- [Features](#features-)
-- [Setup](#setup-)
-- [Authentication](#authentication-jwt-via-djoser-)
-- [Usage](#usage-)
-- [Supported Transformations](#supported-transformations-)
+- [Features](#features)
+- [Setup](#setup)
+- [Authentication](#authentication-jwt-via-djoser)
+- [Usage](#usage)
+- [Supported Transformations](#supported-transformations)
 - [Full Transform Reference](TRANSFORMS.md)
-- [API Documentation](#api-documentation-)
-- [Testing](#testing-)
-- [Technologies](#technologies-used-)
-- [License](#license-)
+- [API Documentation](#api-documentation)
+- [Testing](#testing)
+- [Technologies](#technologies-used)
+- [License](#license)
 
 ## Features 🚀
 
