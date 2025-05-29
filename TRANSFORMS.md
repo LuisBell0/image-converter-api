@@ -314,6 +314,19 @@ Scales the image by a factor using `PIL.ImageOps.scale`.
 - Invalid `resample` → `ValueError("Unknown resampling method")`  
 - Wrong types → `TypeError`  
 
+### sharpness
+**What it does:**
+Adjusts the sharpness of the image using `ImageEnhance.Sharpness`.
+
+**Parameters:**
+- `factor` (float or int)
+  - `1.0` = original, `<1.0` = lower sharpness, `>1.0` = higher sharpness.
+
+**Constraints & Errors:**
+- `factor` > 0.
+  - Invalid → `ValueError("factor must be positive")`
+- Non-numeric → `TypeError`
+
 ### solarize  
 **What it does:**  
 Inverts all pixel values above a threshold using `PIL.ImageOps.solarize`.  
