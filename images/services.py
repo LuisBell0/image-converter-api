@@ -50,8 +50,7 @@ def _save_authenticated(user: CustomUser, buffer: BytesIO, filename: str, conver
     """
     file_content = ContentFile(buffer.getvalue(), name=filename)
     conversion = ImageConversion.objects.create(
-        user=user, conversion_format=conversion_format, status='completed'
-    )
+        user=user, conversion_format=conversion_format)
     conversion.converted_image.save(filename, file_content, save=True)
     return conversion
 

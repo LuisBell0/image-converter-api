@@ -180,7 +180,7 @@ The API currently supports the following transformations (with example config):
 | **thumbnail**        | `{ size(tuple[float float])`, `resample(str, optional)`, `reducing_gap(float, optional) }`                                                |
 | **transpose**        | `transpose_method(str)`                                                                                                                   |
 
-For full parameter details and error cases, see [TRANSFORMS.md](TRANSFORMS.md).
+For full parameter details and error cases, see [TRANSFORMS](TRANSFORMS.md).
 
 All transforms are powered by Pillow, so for full details on each method you can refer to the official Pillow docs. However, be aware that some operations in this API may have extra constraints or modified behavior—so please consult this documentation first for any API-specific limitations.
 

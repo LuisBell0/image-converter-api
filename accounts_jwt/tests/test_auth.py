@@ -45,3 +45,35 @@ class TestViews(TestSetUp):
                                           're_password': self.user_data["password"],
                                           })
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+
+    def test_user_register_with_missing_fields(self):
+        response = self.client.post(self.register_url, {
+            'email': '',
+            'username': '',
+            'password': '',
+            're_password': ''
+        })
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+    def test_user_register_with_mismatched_passwords(self):
+        response = self.client.post(self.register_url, {
+            'email': self.user_data['email'],
+            'username': self.user_data['username'],
+            'password': 'password123',
+            're_password': 'password321'
+        })
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+    def test_user_register_with_existing_email(self):
+        User.objects.create_user(
+            email=self.user_data['email'],
+            username='anotheruser',
+            password=self.user_data['password']
+        )
+        response = self.client.post(self.register_url, {
+            'email': self.user_data['email'],
+            'username': self.user_data['username'],
+            'password': self.user_data['password'],
+            're_password': self.user_data['password']
+        })
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)

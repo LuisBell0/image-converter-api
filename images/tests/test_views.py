@@ -49,3 +49,4 @@ class ImagesTestCase(TestSetUp):
 
         response = self.client.post(self.image_url, data, format='multipart')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
+        
