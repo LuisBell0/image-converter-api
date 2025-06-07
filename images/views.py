@@ -5,8 +5,8 @@ from rest_framework.response import Response
 from .models import ImageConversion
 from .permissions import IsOwner
 from .pipeline import process_image_pipeline
-from .serializers import ImageSerializer
-from .services import _save_conversion, _parse_config, _save_authenticated, _respond_anonymous
+from .serializers import ImageSerializer, UploadImageSerializer
+from .services import save_conversion, parse_config, save_authenticated, respond_anonymous
 
 
 class ImageViewSet(viewsets.ModelViewSet):
@@ -24,24 +24,27 @@ class ImageViewSet(viewsets.ModelViewSet):
         return Response(serializer.data)
 
     def create(self, request, *args, **kwargs):
-        config = _parse_config(request)
+        config = parse_config(request)
         if isinstance(config, Response):
             return config
 
-        image = request.FILES.get("image")
-        if not image:
-            return Response({"detail": "No image file provided."}, status=status.HTTP_400_BAD_REQUEST)
+        uploaded_file = request.FILES.get("image")
+        serializer = UploadImageSerializer(data={"image": uploaded_file})
+        if not serializer.is_valid():
+            return Response(data=serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+        image = serializer.validated_data["image"]
 
         try:
             processed_image, original_format = process_image_pipeline(image, config)
         except (ValueError, TypeError) as e:
             return Response({"detail": str(e)}, status=status.HTTP_400_BAD_REQUEST)
-        new_filename, buffer, new_format = _save_conversion(processed_image, image.name, original_format, config)
+        new_filename, buffer, new_format = save_conversion(processed_image, image.name, original_format, config)
 
         if not request.user.is_authenticated:
-            return _respond_anonymous(buffer, new_filename)
+            return respond_anonymous(buffer, new_filename)
 
-        conversion = _save_authenticated(
+        conversion = save_authenticated(
             user=request.user,
             buffer=buffer,
             conversion_format=original_format,

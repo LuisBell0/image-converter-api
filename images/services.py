@@ -14,7 +14,7 @@ from accounts_jwt.models import CustomUser
 from images.models import ImageConversion
 
 
-def _respond_anonymous(buffer: BytesIO, filename: str) -> FileResponse:
+def respond_anonymous(buffer: BytesIO, filename: str) -> FileResponse:
     """
     Returns a FileResponse for the given buffer, with the specified filename.
 
@@ -31,7 +31,7 @@ def _respond_anonymous(buffer: BytesIO, filename: str) -> FileResponse:
     return FileResponse(buffer, as_attachment=True, filename=filename)
 
 
-def _save_authenticated(user: CustomUser, buffer: BytesIO, filename: str, conversion_format: str) -> ImageConversion:
+def save_authenticated(user: CustomUser, buffer: BytesIO, filename: str, conversion_format: str) -> ImageConversion:
     """
     Persist an image from memory and record its conversion.
 
@@ -55,7 +55,7 @@ def _save_authenticated(user: CustomUser, buffer: BytesIO, filename: str, conver
     return conversion
 
 
-def _save_conversion(image: Image.Image,
+def save_conversion(image: Image.Image,
                      original_name: str,
                      original_format: str,
                      config: Dict[str, Any]) -> Tuple[str, BytesIO, str]:
@@ -97,7 +97,7 @@ def _save_conversion(image: Image.Image,
     return new_filename, buffer, output_format_str
 
 
-def _parse_config(request: Request) -> Dict[str, Any] | Response:
+def parse_config(request: Request) -> Dict[str, Any] | Response:
     """
     Extract and validate a JSON configuration payload from the request.
 

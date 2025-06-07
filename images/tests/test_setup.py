@@ -1,5 +1,8 @@
 import json
+from io import BytesIO
 
+from PIL import Image
+from django.core.files.base import ContentFile
 from django.urls import reverse
 from rest_framework.test import APITestCase
 
@@ -28,3 +31,10 @@ class TestSetUp(APITestCase):
             },
         }),
         return super().setUp()
+
+    def generate_test_image(self):
+        image_io = BytesIO()
+        image = Image.new('RGB', (100, 100), color='red')
+        image.save(image_io, format='JPEG')
+        image_io.seek(0)
+        return ContentFile(image_io.getvalue(), name="test_image.jpg")

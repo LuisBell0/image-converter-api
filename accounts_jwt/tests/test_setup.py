@@ -8,6 +8,7 @@ class TestSetUp(APITestCase):
         self.login_url = reverse('jwt-create')
         self.refresh_url = reverse('jwt-refresh')
         self.verify_url = reverse('jwt-verify')
+        self.user_me_url = reverse('customuser-me')
 
         self.user_data = {
             'email': 'test@test.com',
