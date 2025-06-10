@@ -17,8 +17,8 @@ class ImageSerializer(serializers.ModelSerializer):
 class UploadImageSerializer(serializers.Serializer):
     image = serializers.ImageField(allow_empty_file=False)
 
-    def validate_image(self, image: InMemoryUploadedFile):
-        max_size = 5 * 1024 * 1024  # e.g. 5 MB
+    def validate_image(self, image: InMemoryUploadedFile) -> InMemoryUploadedFile:
+        max_size = 10 * 1024 * 1024
 
         if image.size > max_size:
             raise serializers.ValidationError(

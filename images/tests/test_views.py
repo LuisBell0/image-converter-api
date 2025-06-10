@@ -1,5 +1,6 @@
 from django.contrib.auth import get_user_model
 from rest_framework import status
+import json
 
 from images.tests.test_setup import TestSetUp
 
@@ -20,22 +21,28 @@ class ImagesTestCase(TestSetUp):
 
         self.client.force_authenticate(user=user)
 
-        image_file = self.generate_test_image()
+        config = json.dumps({
+            "format": "png"
+        })
         data = {
-            "image": image_file,
-            "config": self.config,
+            "image": self.image,
+            "config": config,
         }
 
-        response = self.client.post(self.image_url, data, format='multipart')
+        response = self.client.post(self.transform_url, data, format='multipart')
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
 
     def test_image_conversion_by_non_authenticated_user(self):
-        image_file = self.generate_test_image()
+        image_file = self.image
+        config = json.dumps({
+            "format": "png"
+        })
+
         data = {
-            "image": image_file,
-            "config": self.config,
+            "image": self.image,
+            "config": config,
         }
 
-        response = self.client.post(self.image_url, data, format='multipart')
+        response = self.client.post(self.transform_url, data, format='multipart')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         
