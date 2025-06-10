@@ -39,9 +39,9 @@ class ConfigValidator:
         """Ensure `value` is numeric within optional bounds."""
         self.ensure_type(value=value, types=allowed_types, value_name=value_name)
         if min_value is not None and value < min_value:
-            raise ValueError(self.error(value_name=value_name, message=f"must be >= {min_value}; got {value}"))
+            raise ValueError(self.error(value_name=value_name, message=f"out of range must be >= {min_value}; got {value}"))
         if max_value is not None and value > max_value:
-            raise ValueError(self.error(value_name=value_name, message=f"must be <= {max_value}; got {value}"))
+            raise ValueError(self.error(value_name=value_name, message=f"out of range must be <= {max_value}; got {value}"))
         return value
 
     def validate_number_tuple(

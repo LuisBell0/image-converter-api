@@ -1,79 +1,148 @@
 from rest_framework import status
+from rest_framework.response import Response
+
 from ..test_setup import TestSetUp
-import json
-from io import BytesIO
-from PIL import Image as PILImage
+
+
+#TODO: FIX OUT OF RANGE AND INVALID TYPES
 
 class TestAutocontrast(TestSetUp):
     """
-    Tests for the autocontrast transformation.
+    Test suite for the `autocontrast` image transformation endpoint.
     """
 
-    def post_autocontrast(self, config_dict, image=None, expected_status=status.HTTP_200_OK):
+    def test_autocontrast_success_default(self) -> None:
         """
-        Helper to post an autocontrast request and assert status.
-        Returns the response object for further inspection.
+        Applying autocontrast with valid default parameters should return HTTP 200 for anonymous users.
         """
-        payload = {
-            "config": json.dumps(config_dict),
-            "image": image or self.image
+        configuration: dict = {
+            "autocontrast": {
+                "cutoff": 10.0,
+                "ignore": 1,
+                "preserve_tone": True
+            }
         }
-        response = self.client.post(self.transform_url, payload, format="multipart")
-        self.assertEqual(response.status_code, expected_status)
-        return response
+        self.post_transformation(config_dict=configuration)
 
-    def test_autocontrast_success_default(self):
+    def test_autocontrast_extra_keys_do_not_crash(self) -> None:
         """
-        Full autocontrast config should succeed and return 200.
+        Including unexpected keys in autocontrast configuration should not cause a server error.
         """
-        config = {"autocontrast": {"cutoff": 10.0, "ignore": 1, "preserve_tone": True}}
-        self.post_autocontrast(config)
+        configuration: dict = {
+            "autocontrast": {
+                "cutoff": 10.0,
+                "ignore": 1,
+                "preserve_tone": True,
+                "foo": "bar"
+            }
+        }
+        self.post_transformation(config_dict=configuration)
 
-    def test_autocontrast_missing_required_parameters(self):
+    def test_autocontrast_missing_required_parameters(self) -> None:
         """
-        Missing any of the required autocontrast fields should return 400.
+        Omitting required autocontrast parameters should return HTTP 400 with a descriptive message.
         """
-        # Missing 'cutoff'
-        config = {"autocontrast": {"ignore": 1, "preserve_tone": True}}
-        self.post_autocontrast(config, expected_status=status.HTTP_400_BAD_REQUEST)
+        configuration: dict = {
+            "autocontrast": {
+                "ignore": 1,
+                "preserve_tone": True
+            }
+        }
+        response: Response = self.post_transformation(
+            config_dict=configuration,
+            expected_status=status.HTTP_400_BAD_REQUEST
+        )
+        detail_message: str = response.data.get("detail", "")
+        self.assertIn("missing", detail_message)
 
-    def test_autocontrast_invalid_types(self):
+    def test_autocontrast_invalid_types(self) -> None:
         """
-        Invalid types for parameters should return 400.
+        Providing invalid types for autocontrast parameters should return HTTP 400 with type error descriptions.
         """
-        # cutoff must be numeric
-        config = {"autocontrast": {"cutoff": "high", "ignore": 1, "preserve_tone": True}}
-        self.post_autocontrast(config, expected_status=status.HTTP_400_BAD_REQUEST)
+        configuration: dict = {
+            "autocontrast": {
+                "cutoff": "high",
+                "ignore": 1,
+                "preserve_tone": True
+            }
+        }
+        response: Response = self.post_transformation(
+            config_dict=configuration,
+            expected_status=status.HTTP_400_BAD_REQUEST
+        )
+        detail_message: str = response.data.get("detail", "")
+        self.assertIn("must be of type", detail_message)
 
-        # ignore must be integer
-        config = {"autocontrast": {"cutoff": 10.0, "ignore": 1.5, "preserve_tone": True}}
-        self.post_autocontrast(config, expected_status=status.HTTP_400_BAD_REQUEST)
+        configuration: dict = {
+            "autocontrast": {
+                "cutoff": 10.0,
+                "ignore": 1.5,
+                "preserve_tone": True
+            }
+        }
+        response: Response = self.post_transformation(
+            config_dict=configuration,
+            expected_status=status.HTTP_400_BAD_REQUEST
+        )
+        detail_message: str = response.data.get("detail", "")
+        self.assertIn("must be of type", detail_message)
 
-        # preserve_tone must be boolean
-        config = {"autocontrast": {"cutoff": 10.0, "ignore": 1, "preserve_tone": "yes"}}
-        self.post_autocontrast(config, expected_status=status.HTTP_400_BAD_REQUEST)
+        configuration: dict = {
+            "autocontrast": {
+                "cutoff": 10.0,
+                "ignore": 1,
+                "preserve_tone": "yes"
+            }
+        }
+        response: Response = self.post_transformation(
+            config_dict=configuration,
+            expected_status=status.HTTP_400_BAD_REQUEST
+        )
+        detail_message: str = response.data.get("detail", "")
+        self.assertIn("must be of type", detail_message)
 
-    def test_autocontrast_out_of_range(self):
+    def test_autocontrast_out_of_range(self) -> None:
         """
-        Values outside allowed ranges should return 400.
+        Autocontrast parameters outside allowed ranges should return HTTP 400 with range error descriptions.
         """
-        # cutoff negative
-        config = {"autocontrast": {"cutoff": -1.0, "ignore": 1, "preserve_tone": True}}
-        self.post_autocontrast(config, expected_status=status.HTTP_400_BAD_REQUEST)
+        configuration: dict = {
+            "autocontrast": {
+                "cutoff": -1.0,
+                "ignore": 1,
+                "preserve_tone": True
+            }
+        }
+        response: Response = self.post_transformation(
+            config_dict=configuration,
+            expected_status=status.HTTP_400_BAD_REQUEST
+        )
+        detail_message: str = response.data.get("detail", "")
+        self.assertIn("out of range", detail_message)
 
-        # ignore negative
-        config = {"autocontrast": {"cutoff": 10.0, "ignore": -1, "preserve_tone": True}}
-        self.post_autocontrast(config, expected_status=status.HTTP_400_BAD_REQUEST)
+        configuration: dict = {
+            "autocontrast": {
+                "cutoff": 10.0,
+                "ignore": -1,
+                "preserve_tone": True
+            }
+        }
+        response: Response = self.post_transformation(
+            config_dict=configuration,
+            expected_status=status.HTTP_400_BAD_REQUEST
+        )
+        detail_message: str = response.data.get("detail", "")
+        self.assertIn("out of range", detail_message)
 
-        # cutoff too large
-        config = {"autocontrast": {"cutoff": 101.0, "ignore": 1, "preserve_tone": True}}
-        self.post_autocontrast(config, expected_status=status.HTTP_400_BAD_REQUEST)
-
-    def test_autocontrast_extra_keys(self):
-        """
-        Unexpected keys in autocontrast payload should not cause a server error.
-        """
-        config = {"autocontrast": {"cutoff": 10.0, "ignore": 1, "preserve_tone": True, "foo": "bar"}}
-        # Implementation may ignore 'foo' or return 400; ensure no 500
-        response = self.post_autocontrast(config)
-        self.assertIn(response.status_code, [status.HTTP_200_OK, status.HTTP_400_BAD_REQUEST])
+        configuration: dict = {
+            "autocontrast": {
+                "cutoff": 101.0,
+                "ignore": 1,
+                "preserve_tone": True
+            }
+        }
+        response: Response = self.post_transformation(
+            config_dict=configuration,
+            expected_status=status.HTTP_400_BAD_REQUEST
+        )
+        detail_message: str = response.data.get("detail", "")
+        self.assertIn("out of range", detail_message)
