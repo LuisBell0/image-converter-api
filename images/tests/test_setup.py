@@ -33,9 +33,11 @@ class TestSetUp(APITestCase):
         Helper to post a transformation request and assert status.
         Returns the response object for further inspection.
         """
+        upload_file = image or self.image
+        upload_file.seek(0)
         payload = {
             "config": json.dumps(config_dict),
-            "image": image or self.image
+            "image": upload_file
         }
         response = self.client.post(self.transform_url, payload, format="multipart")
         self.assertEqual(response.status_code, expected_status)
