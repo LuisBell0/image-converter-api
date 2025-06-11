@@ -69,6 +69,7 @@ class ExpandImage(Transformation):
             ValueError: If the integer is negative or the tuple contains invalid values.
             TypeError: If the value is not an integer or a 4-tuple/list of integers.
         """
+        validator.ensure_type(value=value, types=(int, tuple), value_name="border")
         if isinstance(value, int):
             if value < 0:
                 raise ValueError(validator.error(value_name="border", message=f"must be non-negative; got {value}"))

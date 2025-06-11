@@ -6,7 +6,7 @@ from ..test_setup import TestSetUp
 
 class TestAutocontrast(TestSetUp):
     """
-    Test suite for the `autocontrast` image transformation endpoint.
+    Test suite for the `autocontrast` image transformation.
     """
 
     def test_autocontrast_success_default(self) -> None:
@@ -51,7 +51,7 @@ class TestAutocontrast(TestSetUp):
             expected_status=status.HTTP_400_BAD_REQUEST
         )
         detail_message: str = response.data.get("detail", "")
-        self.assertIn("missing", detail_message)
+        self.assertIn("missing required configuration key", detail_message)
 
     def test_autocontrast_invalid_types(self) -> None:
         """
