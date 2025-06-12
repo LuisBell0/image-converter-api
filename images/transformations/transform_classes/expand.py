@@ -71,8 +71,7 @@ class ExpandImage(Transformation):
         """
         validator.ensure_type(value=value, types=(int, tuple), value_name="border")
         if isinstance(value, int):
-            if value < 0:
-                raise ValueError(validator.error(value_name="border", message=f"must be non-negative; got {value}"))
+            validator.validate_number(value=value, value_name="border", allowed_types=(int,), min_value=0)
             return value
 
         if isinstance(value, (tuple, list)):

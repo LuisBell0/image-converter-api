@@ -11,9 +11,9 @@ class ConfigValidator:
         """Return a formatted error message."""
         return f"{self.key} '{value_name}' {message}"
 
-    def ensure_type(self, value: Any, types: tuple[type, ...], value_name: str):
+    def ensure_type(self, value: Any, types: tuple[type, ...], value_name: str) -> None:
         """Raise if `value` is not an instance of any `types`."""
-        if not isinstance(value, types):
+        if type(value) not in types:
             allowed = ", ".join(t.__name__ for t in types)
             raise TypeError(self.error(value_name=value_name, message=f"must be of type(s): {allowed}; got {type(value).__name__}"))
 

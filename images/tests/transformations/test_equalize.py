@@ -3,6 +3,7 @@ from rest_framework.response import Response
 
 from ..test_setup import TestSetUp
 
+
 class TestEqualize(TestSetUp):
     """
     Test suite for the `equalize` image transformation.
