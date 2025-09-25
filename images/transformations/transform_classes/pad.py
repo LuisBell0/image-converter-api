@@ -108,7 +108,7 @@ class PadImage(Transformation):
         if not (0.0 <= center_x <= 1.0 and 0.0 <= center_y <= 1.0):
             raise ValueError(validator.error(
                 value_name=value_name,
-                message=f"values must be between 0.0 and 1.0; got {value!r}"
+                message=f"value(s) out of range, must be between 0.0 and 1.0; got {value!r}"
             ))
 
         return float(center_x), float(center_y)

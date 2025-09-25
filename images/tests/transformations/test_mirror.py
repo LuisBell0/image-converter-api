@@ -3,45 +3,43 @@ from rest_framework.response import Response
 
 from ..test_setup import TestSetUp
 
-
-class TestEqualize(TestSetUp):
+class TestMirror(TestSetUp):
     """
-    Test suite for the `equalize` image transformation.
+    Test suite for the `mirror` image transformation.
     """
-
-    def test_equalize_successful_with_empty_dictionary(self) -> None:
+    def test_mirror_successful_with_empty_dictionary(self) -> None:
         """
-        Applying equalize with an empty dictionary should return HTTP 200 for anonymous users.
+        Applying mirror with an empty dictionary should return HTTP 200 for anonymous users.
         """
         configuration: dict = {
-            "equalize": {}
+            "mirror": {}
         }
         self.post_transformation(config_dict=configuration)
 
-    def test_equalize_successful_with_empty_list(self) -> None:
+    def test_mirror_successful_with_empty_list(self) -> None:
         """
-        Applying equalize with an empty list should return HTTP 200 for anonymous users.
+        Applying mirror with an empty list should return HTTP 200 for anonymous users.
         """
         configuration: dict = {
-            "equalize": []
+            "mirror": []
         }
         self.post_transformation(config_dict=configuration)
 
-    def test_equalize_successful_with_none_value(self) -> None:
+    def test_mirror_successful_with_none_value(self) -> None:
         """
-        Applying equalize with a None value should return HTTP 200 for anonymous users.
+        Applying mirror with a None value should return HTTP 200 for anonymous users.
         """
         configuration: dict = {
-            "equalize": None
+            "mirror": None
         }
         self.post_transformation(config_dict=configuration)
 
-    def test_equalize_unsuccessful_with_non_empty_dictionary(self) -> None:
+    def test_mirror_unsuccessful_with_non_empty_dictionary(self) -> None:
         """
-        Providing a non-empty dictionary for equalize should return HTTP 400 with a message indicating that parameters are not accepted.
+        Providing a non-empty dictionary for mirror should return HTTP 400 with a message indicating that parameters are not accepted.
         """
         configuration: dict = {
-            "equalize": {"key": "value"}
+            "mirror": {"key": "value"}
         }
         response: Response = self.post_transformation(
             config_dict=configuration,
@@ -50,12 +48,12 @@ class TestEqualize(TestSetUp):
         detail_message: str = response.data.get("detail", "")
         self.assertIn("does not accept parameters", detail_message)
 
-    def test_equalize_unsuccessful_invalid_type(self) -> None:
+    def test_mirror_unsuccessful_invalid_type(self) -> None:
         """
-        Providing an invalid type (boolean) for equalize should return HTTP 400 with a type error message.
+        Providing an invalid type (boolean) for mirror should return HTTP 400 with a type error message.
         """
         configuration: dict = {
-            "equalize": True
+            "mirror": True
         }
         response: Response = self.post_transformation(
             config_dict=configuration,
@@ -65,7 +63,7 @@ class TestEqualize(TestSetUp):
         self.assertIn("does not accept parameters", detail_message)
 
         configuration: dict = {
-            "equalize": 12
+            "mirror": 12
         }
         response: Response = self.post_transformation(
             config_dict=configuration,

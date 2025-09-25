@@ -76,3 +76,4 @@ Pipfile.lock
 
 # Other
 *.bak
+*.http

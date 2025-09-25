@@ -57,19 +57,19 @@ class TestAutocontrast(TestSetUp):
         """
         Providing invalid types for autocontrast parameters should return HTTP 400 with type error descriptions.
         """
-        invalid_cutoff_type: dict = {
+        configuration: dict = {
             "autocontrast": {
                 "cutoff": "high",
             }
         }
         response: Response = self.post_transformation(
-            config_dict=invalid_cutoff_type,
+            config_dict=configuration,
             expected_status=status.HTTP_400_BAD_REQUEST
         )
         detail_message: str = response.data.get("detail", "")
         self.assertIn("must be of type", detail_message)
 
-        invalid_ignore_type: dict = {
+        configuration: dict = {
             "autocontrast": {
                 "cutoff": 10.0,
                 "ignore": 1.5,
@@ -77,13 +77,13 @@ class TestAutocontrast(TestSetUp):
             }
         }
         response: Response = self.post_transformation(
-            config_dict=invalid_ignore_type,
+            config_dict=configuration,
             expected_status=status.HTTP_400_BAD_REQUEST
         )
         detail_message: str = response.data.get("detail", "")
         self.assertIn("must be of type", detail_message)
 
-        invalid_preserve_tone_type: dict = {
+        configuration: dict = {
             "autocontrast": {
                 "cutoff": 10.0,
                 "ignore": 1,
@@ -91,7 +91,7 @@ class TestAutocontrast(TestSetUp):
             }
         }
         response: Response = self.post_transformation(
-            config_dict=invalid_preserve_tone_type,
+            config_dict=configuration,
             expected_status=status.HTTP_400_BAD_REQUEST
         )
         detail_message: str = response.data.get("detail", "")
@@ -101,26 +101,26 @@ class TestAutocontrast(TestSetUp):
         """
         Autocontrast parameters outside allowed ranges should return HTTP 400 with range error descriptions.
         """
-        out_of_range_cutoff: dict = {
+        configuration: dict = {
             "autocontrast": {
                 "cutoff": -1.0,
             }
         }
         response: Response = self.post_transformation(
-            config_dict=out_of_range_cutoff,
+            config_dict=configuration,
             expected_status=status.HTTP_400_BAD_REQUEST
         )
         detail_message: str = response.data.get("detail", "")
         self.assertIn("out of range", detail_message)
 
-        out_of_range_ignore: dict = {
+        configuration: dict = {
             "autocontrast": {
                 "cutoff": 10.0,
                 "ignore": -1,
             }
         }
         response: Response = self.post_transformation(
-            config_dict=out_of_range_ignore,
+            config_dict=configuration,
             expected_status=status.HTTP_400_BAD_REQUEST
         )
         detail_message: str = response.data.get("detail", "")

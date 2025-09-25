@@ -3,45 +3,43 @@ from rest_framework.response import Response
 
 from ..test_setup import TestSetUp
 
-
-class TestEqualize(TestSetUp):
+class TestInvert(TestSetUp):
     """
-    Test suite for the `equalize` image transformation.
+    Test suite for the `invert` image transformation.
     """
-
-    def test_equalize_successful_with_empty_dictionary(self) -> None:
+    def test_invert_successful_with_empty_dictionary(self) -> None:
         """
         Applying equalize with an empty dictionary should return HTTP 200 for anonymous users.
         """
         configuration: dict = {
-            "equalize": {}
+            "invert": {}
         }
         self.post_transformation(config_dict=configuration)
 
-    def test_equalize_successful_with_empty_list(self) -> None:
+    def test_invert_successful_with_empty_list(self) -> None:
         """
-        Applying equalize with an empty list should return HTTP 200 for anonymous users.
+        Applying invert with an empty list should return HTTP 200 for anonymous users.
         """
         configuration: dict = {
-            "equalize": []
+            "invert": []
         }
         self.post_transformation(config_dict=configuration)
 
-    def test_equalize_successful_with_none_value(self) -> None:
+    def test_invert_successful_with_none_value(self) -> None:
         """
-        Applying equalize with a None value should return HTTP 200 for anonymous users.
+        Applying invert with a None value should return HTTP 200 for anonymous users.
         """
         configuration: dict = {
-            "equalize": None
+            "invert": None
         }
         self.post_transformation(config_dict=configuration)
 
-    def test_equalize_unsuccessful_with_non_empty_dictionary(self) -> None:
+    def test_invert_unsuccessful_with_non_empty_dictionary(self) -> None:
         """
-        Providing a non-empty dictionary for equalize should return HTTP 400 with a message indicating that parameters are not accepted.
+        Providing a non-empty dictionary for invert should return HTTP 400 with a message indicating that parameters are not accepted.
         """
         configuration: dict = {
-            "equalize": {"key": "value"}
+            "invert": {"key": "value"}
         }
         response: Response = self.post_transformation(
             config_dict=configuration,
@@ -50,12 +48,12 @@ class TestEqualize(TestSetUp):
         detail_message: str = response.data.get("detail", "")
         self.assertIn("does not accept parameters", detail_message)
 
-    def test_equalize_unsuccessful_invalid_type(self) -> None:
+    def test_invert_unsuccessful_invalid_type(self) -> None:
         """
-        Providing an invalid type (boolean) for equalize should return HTTP 400 with a type error message.
+        Providing an invalid type (boolean) for invert should return HTTP 400 with a type error message.
         """
         configuration: dict = {
-            "equalize": True
+            "invert": True
         }
         response: Response = self.post_transformation(
             config_dict=configuration,
@@ -65,7 +63,7 @@ class TestEqualize(TestSetUp):
         self.assertIn("does not accept parameters", detail_message)
 
         configuration: dict = {
-            "equalize": 12
+            "invert": 12
         }
         response: Response = self.post_transformation(
             config_dict=configuration,
